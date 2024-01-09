@@ -249,8 +249,11 @@ WebServer.prototype = {
               href = encodeURI(item);
               label = file;
             } else if (path.extname(file).toLowerCase() === ".pdf") {
+				console.log("file: " + file);
               href = "/web/viewer.html?file=" + encodeURIComponent(item);
+              console.log("🚀 ~ file: webserver.mjs:254 ~ href:", href)
               label = file;
+              console.log("🚀 ~ file: webserver.mjs:256 ~ label:", label)
               extraAttributes = ' target="pdf"';
             } else if (all) {
               href = encodeURI(item);

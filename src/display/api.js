@@ -2862,7 +2862,13 @@ class WorkerTransport {
           "please use the getData-method instead."
       );
     }
+
+	console.log("saveDocument called")
     const { map, transfer } = this.annotationStorage.serializable;
+    console.log("🚀 ~ file: api.js:2868 ~ WorkerTransport ~ saveDocument ~ map:", map)
+    console.log("🚀 ~ file: api.js:2868 ~ WorkerTransport ~ saveDocument ~ transfer:", transfer)
+
+	
 
     return this.messageHandler
       .sendWithPromise(

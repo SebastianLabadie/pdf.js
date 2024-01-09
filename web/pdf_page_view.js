@@ -866,7 +866,9 @@ class PDFPageView {
     // Wrap the canvas so that if it has a CSS transform for high DPI the
     // overflow will be hidden in Firefox.
     const canvasWrapper = document.createElement("div");
+    console.log("🚀 ~ file: pdf_page_view.js:869 ~ PDFPageView ~ draw ~ canvasWrapper:", canvasWrapper)
     canvasWrapper.classList.add("canvasWrapper");
+	canvasWrapper.classList.add(`canvasPage-${this.id}`);
     div.append(canvasWrapper);
 
     if (

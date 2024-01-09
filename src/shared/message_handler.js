@@ -189,7 +189,9 @@ class MessageHandler {
    * @returns {Promise} Promise to be resolved with response data.
    */
   sendWithPromise(actionName, data, transfers) {
+	
     const callbackId = this.callbackId++;
+    console.log("🚀 ~ file: message_handler.js:194 ~ MessageHandler ~ sendWithPromise ~ callbackId:", callbackId)
     const capability = new PromiseCapability();
     this.callbackCapabilities[callbackId] = capability;
     try {

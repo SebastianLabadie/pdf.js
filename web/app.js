@@ -75,9 +75,14 @@ import { PDFViewer } from "./pdf_viewer.js";
 import { SecondaryToolbar } from "web-secondary_toolbar";
 import { Toolbar } from "web-toolbar";
 import { ViewHistory } from "./view_history.js";
+import { base64ToBlob, obtenerDocumento } from "./js/firmaUtils.js";
+import { iniciarFirma } from "./js/firma.js";
 
 const FORCE_PAGES_LOADED_TIMEOUT = 10000; // ms
 const WHEEL_ZOOM_DISABLED_TIMEOUT = 1000; // ms
+
+
+
 
 const ViewOnLoad = {
   UNKNOWN: -1,
@@ -366,6 +371,20 @@ const PDFViewerApplication = {
       : new EventBus();
     this.eventBus = eventBus;
 
+	this.eventBus._on("pagesinit", function(evt) {
+		console.log("TERMINO DE CARGAR EL PDF ", PDFViewerApplication.pagesCount)
+		
+	})
+
+	this.eventBus._on("pagerendered", function(evt) {
+		console.log("TERMINO DE CARGAR una pagina ", evt)
+		if (evt.pageNumber === PDFViewerApplication.pagesCount) {
+			iniciarFirma()
+		}
+	})
+
+	
+
     this.overlayManager = new OverlayManager();
 
     const pdfRenderingQueue = new PDFRenderingQueue();
@@ -618,10 +637,22 @@ const PDFViewerApplication = {
     const { appConfig, eventBus } = this;
     let file;
     if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-      const queryString = document.location.search.substring(1);
-      const params = parseQueryString(queryString);
-      file = params.get("file") ?? AppOptions.get("defaultUrl");
-      validateFileURL(file);
+
+		
+		//Cambio la logica para que busque el archivo en un ws
+		const documento = await obtenerDocumento()
+		console.log("🚀 ~ file: app.js:627 ~ run ~ file:", file)
+		//TODO CATCHEAR ERROREs
+		file = base64ToBlob(documento.FileB64)
+
+    //   const queryString = document.location.search.substring(1);
+    //   const params = parseQueryString(queryString);
+    //   file = params.get("file") ?? AppOptions.get("defaultUrl");
+    //   validateFileURL(file);
+
+
+
+
     } else if (PDFJSDev.test("MOZCENTRAL")) {
       file = window.location.href;
     } else if (PDFJSDev.test("CHROME")) {
@@ -688,7 +719,7 @@ const PDFViewerApplication = {
 
     if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
       if (file) {
-        this.open({ url: file });
+        this.open({ data: file });
       } else {
         this._hideViewBookmark();
       }
@@ -1048,8 +1079,10 @@ const PDFViewerApplication = {
   },
 
   async download(options = {}) {
-    const url = this._downloadUrl,
+	
+	  const url = this._downloadUrl,
       filename = this._docFilename;
+      console.log("🚀 ~ file: app.js:1053 ~ download ~ url:", url)
     try {
       this._ensureDownloadComplete();
 
@@ -1068,6 +1101,7 @@ const PDFViewerApplication = {
     if (this._saveInProgress) {
       return;
     }
+	console.log("🚀 ~ file: app.js:1072 ~ save ~ options", options)
     this._saveInProgress = true;
     await this.pdfScriptingManager.dispatchWillSave();
 
@@ -1191,6 +1225,7 @@ const PDFViewerApplication = {
       this.loadingBar?.hide();
 
       firstPagePromise.then(() => {
+		console.log("🚀 ~ file: app.js:1201 ~ load ~ firstPagePromise.then ~ firstPagePromise", firstPagePromise)
         this.eventBus.dispatch("documentloaded", { source: this });
       });
     });
@@ -2169,9 +2204,9 @@ if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
       // Removing of the following line will not guarantee that the viewer will
       // start accepting URLs from foreign origin -- CORS headers on the remote
       // server must be properly configured.
-      if (fileOrigin !== viewerOrigin) {
-        throw new Error("file origin does not match viewer's");
-      }
+    //   if (fileOrigin !== viewerOrigin) {
+    //     throw new Error("file origin does not match viewer's");
+    //   }
     } catch (ex) {
       PDFViewerApplication.l10n.get("pdfjs-loading-error").then(msg => {
         PDFViewerApplication._documentError(msg, { message: ex?.message });
@@ -3216,6 +3251,11 @@ const PDFPrintServiceFactory = {
     },
   },
 };
+
+
+
+/* ------------- FIRMA ------------- */
+
 
 export {
   DefaultExternalServices,

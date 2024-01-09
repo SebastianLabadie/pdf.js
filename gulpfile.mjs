@@ -41,6 +41,7 @@ import Vinyl from "vinyl";
 import webpack2 from "webpack";
 import webpackStream from "webpack-stream";
 import zip from "gulp-zip";
+import axios from 'axios';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -68,7 +69,7 @@ const TMP_DIR = BUILD_DIR + "tmp/";
 const TYPESTEST_DIR = BUILD_DIR + "typestest/";
 const COMMON_WEB_FILES = [
   "web/images/*.{png,svg,gif}",
-  "web/debugger.{css,mjs}",
+  "web/debugger.{css,mjs}"
 ];
 const MOZCENTRAL_DIFF_FILE = "mozcentral.diff";
 
@@ -271,6 +272,7 @@ function createWebpackConfig(
     "web-print_service": "",
     "web-secondary_toolbar": "web/secondary_toolbar.js",
     "web-toolbar": "web/toolbar.js",
+	"signature_pad": "node_modules/signature_pad/dist/signature_pad.umd.js",
   };
   if (bundleDefines.CHROME) {
     libraryAlias["display-fetch_stream"] = "src/display/fetch_stream.js";
@@ -593,6 +595,12 @@ function createCMapBundle() {
     base: "external/bcmaps",
   });
 }
+
+function createJSBundle() {
+	return gulp.src(["web/js/*.js"], {
+	  base: "web/js",
+	});
+  }
 
 function createStandardFontBundle() {
   return gulp.src(
@@ -989,6 +997,10 @@ function buildGeneric(defines, dir) {
         : "generic-legacy/",
     }).pipe(gulp.dest(dir + "web")),
     gulp.src(COMMON_WEB_FILES, { base: "web/" }).pipe(gulp.dest(dir + "web")),
+
+	createJSBundle().pipe(gulp.dest(dir + "web/js")),
+	gulp.src(['web/assets/fonts/*.otf','web/assets/images/*.{png,jpg}'], { base: "web/assets" }).pipe(gulp.dest(dir + "web/assets")),
+
     gulp.src("LICENSE").pipe(gulp.dest(dir)),
     gulp
       .src(["web/locale/*/viewer.ftl", "web/locale/locale.json"], {
@@ -2064,7 +2076,7 @@ gulp.task(
 
       const { WebServer } = await import("./test/webserver.mjs");
       const server = new WebServer();
-      server.port = 8888;
+      server.port = 5173;
       server.start();
     }
   )

@@ -84,14 +84,17 @@ class DownloadManager {
       if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
         // The current URL is the viewer, let's use it and append the file.
         viewerUrl = "?file=" + encodeURIComponent(blobUrl + "#" + filename);
+        console.log("🚀 ~ file: download_manager.js:87 ~ DownloadManager ~ openOrDownloadData ~ viewerUrl:", viewerUrl)
+		
       } else if (PDFJSDev.test("CHROME")) {
         // In the Chrome extension, the URL is rewritten using the history API
         // in viewer.js, so an absolute URL must be generated.
         viewerUrl =
-          // eslint-disable-next-line no-undef
-          chrome.runtime.getURL("/content/web/viewer.html") +
-          "?file=" +
-          encodeURIComponent(blobUrl + "#" + filename);
+		// eslint-disable-next-line no-undef
+		chrome.runtime.getURL("/content/web/viewer.html") +
+		"?file=" +
+		encodeURIComponent(blobUrl + "#" + filename);
+		console.log("🚀 ~ file: download_manager.js:91 ~ DownloadManager ~ openOrDownloadData ~ viewerUrl:", viewerUrl)
       }
       if (dest) {
         viewerUrl += `#${escape(dest)}`;

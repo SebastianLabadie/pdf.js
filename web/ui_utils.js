@@ -156,6 +156,8 @@ function scrollIntoView(element, spot, scrollMatches = false) {
  * PDF.js friendly one: with scroll debounce and scroll direction.
  */
 function watchScroll(viewAreaElement, callback) {
+	console.log("🚀 ~ file: ui_utils.js:159 ~ watchScroll ~ viewAreaElement:", viewAreaElement)
+	
   const debounceScroll = function (evt) {
     if (rAF) {
       return;
@@ -171,6 +173,7 @@ function watchScroll(viewAreaElement, callback) {
       }
       state.lastX = currentX;
       const currentY = viewAreaElement.scrollTop;
+      console.log("🚀 ~ file: ui_utils.js:176 ~ viewAreaElementScrolled ~ currentY:", currentY)
       const lastY = state.lastY;
       if (currentY !== lastY) {
         state.down = currentY > lastY;
@@ -472,6 +475,8 @@ function getVisibleElements({
   horizontal = false,
   rtl = false,
 }) {
+	// console.log("🚀 ~ file: ui_utils.js:423 ~ getVisibleElements ~ scrollEl:", scrollEl)
+
   const top = scrollEl.scrollTop,
     bottom = top + scrollEl.clientHeight;
   const left = scrollEl.scrollLeft,
@@ -491,6 +496,7 @@ function getVisibleElements({
     const element = view.div;
     const elementBottom =
       element.offsetTop + element.clientTop + element.clientHeight;
+	  
     return elementBottom > top;
   }
   function isElementNextAfterViewHorizontally(view) {
@@ -542,12 +548,24 @@ function getVisibleElements({
   for (let i = firstVisibleElementInd; i < numViews; i++) {
     const view = views[i],
       element = view.div;
-    const currentWidth = element.offsetLeft + element.clientLeft;
-    const currentHeight = element.offsetTop + element.clientTop;
-    const viewWidth = element.clientWidth,
+
+	  const currentWidth = element.offsetLeft + element.clientLeft;
+	  
+	  const currentHeight = element.offsetTop + element.clientTop;
+	  
+	  const viewWidth = element.clientWidth,
       viewHeight = element.clientHeight;
-    const viewRight = currentWidth + viewWidth;
-    const viewBottom = currentHeight + viewHeight;
+	  const viewRight = currentWidth + viewWidth;
+	  const viewBottom = currentHeight + viewHeight;
+	  
+	//   if (element.getAttribute('data-page-number') === "1") {
+	// 	console.log("🚀 ~ file: ui_utils.js:548 ~ element:", element)
+	//   	console.log("🚀 ~ file: ui_utils.js:548 ~ currentHeight:", currentHeight)
+	// 	console.log("🚀 ~ file: ui_utils.js:548 ~ viewWidth:", viewWidth)
+	// 	console.log("🚀 ~ file: ui_utils.js:548 ~ viewHeight:", viewHeight)
+	//   	console.log("🚀 ~ file: ui_utils.js:548 ~ viewRight:", viewRight)
+	//   	console.log("🚀 ~ file: ui_utils.js:548 ~ viewBottom:", viewBottom)
+	// 	}
 
     if (lastEdge === -1) {
       // As commented above, this is only needed in non-horizontal cases.
@@ -570,10 +588,10 @@ function getVisibleElements({
       continue;
     }
 
-    const hiddenHeight =
-      Math.max(0, top - currentHeight) + Math.max(0, viewBottom - bottom);
-    const hiddenWidth =
-      Math.max(0, left - currentWidth) + Math.max(0, viewRight - right);
+    const hiddenHeight = Math.max(0, top - currentHeight) + Math.max(0, viewBottom - bottom);
+ 	// console.log("🚀 ~ file: ui_utils.js:581 ~ hiddenHeight:", hiddenHeight)
+    const hiddenWidth = Math.max(0, left - currentWidth) + Math.max(0, viewRight - right);
+    // console.log("🚀 ~ file: ui_utils.js:583 ~ hiddenWidth:", hiddenWidth)
 
     const fractionHeight = (viewHeight - hiddenHeight) / viewHeight,
       fractionWidth = (viewWidth - hiddenWidth) / viewWidth;

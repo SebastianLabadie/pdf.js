@@ -20,21 +20,25 @@ import { AppOptions } from "./app_options.js";
 import { LinkTarget } from "./pdf_link_service.js";
 import { PDFViewerApplication } from "./app.js";
 
-/* eslint-disable-next-line no-unused-vars */
-const pdfjsVersion =
-  typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_VERSION") : void 0;
-/* eslint-disable-next-line no-unused-vars */
-const pdfjsBuild =
-  typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_BUILD") : void 0;
+// /* eslint-disable-next-line no-unused-vars */
+// const pdfjsVersion =
+//   typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_VERSION") : void 0;
+// /* eslint-disable-next-line no-unused-vars */
+// const pdfjsBuild =
+//   typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_BUILD") : void 0;
 
 const AppConstants =
   typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")
     ? { LinkTarget, RenderingStates, ScrollMode, SpreadMode }
     : null;
 
+
 window.PDFViewerApplication = PDFViewerApplication;
+console.log("🚀 ~ file: viewer.js:38 ~ PDFViewerApplication:", PDFViewerApplication)
 window.PDFViewerApplicationConstants = AppConstants;
+console.log("🚀 ~ file: viewer.js:40 ~ AppConstants:", AppConstants)
 window.PDFViewerApplicationOptions = AppOptions;
+console.log("🚀 ~ file: viewer.js:42 ~ AppOptions:", AppOptions)
 
 function getViewerConfiguration() {
   return {
@@ -208,7 +212,13 @@ function webViewerLoad() {
       document.dispatchEvent(event);
     }
   }
+//   PDFViewerApplication.pdfViewer.eventBus._on("documentload", function() {
+// 	console.log("🚀 ~ file: viewer.js:164 ~ PDFViewerApplication.pdfViewer.eventBus._on ~ documentload")
+//   })
+
+  console.log('PDFViewerApplication.pdfViewer = ', PDFViewerApplication.pdfViewer)
   PDFViewerApplication.run(config);
+  
 }
 
 // Block the "load" event until all pages are loaded, to ensure that printing
@@ -223,6 +233,7 @@ if (
 } else {
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
+
 
 export {
   PDFViewerApplication,

@@ -70,6 +70,7 @@ class PDFRenderingQueue {
    * @param {Object} currentlyVisiblePages
    */
   renderHighestPriority(currentlyVisiblePages) {
+    console.log("🚀 ~ file: pdf_rendering_queue.js:73 ~ PDFRenderingQueue ~ renderHighestPriority ~ currentlyVisiblePages:", currentlyVisiblePages)
     if (this.idleTimeout) {
       clearTimeout(this.idleTimeout);
       this.idleTimeout = null;

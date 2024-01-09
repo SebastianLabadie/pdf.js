@@ -96,6 +96,7 @@ describe("annotation", function () {
     }
 
     sendWithPromise(name, data) {
+		console.log("sendWithPromise");
       if (name !== "FetchStandardFontData") {
         return Promise.reject(new Error(`Unsupported mock ${name}.`));
       }
