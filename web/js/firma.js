@@ -186,7 +186,9 @@ async function iniciarFirma() {
 		let padData = signaturePad.toData();
 		// alert("🚀 ~ file: firma.js:175 ~ toData: "+ JSON.stringify(toData))
 
-		let padImage = signaturePad.toDataURL("image/png");
+		const padImage = signaturePad.toDataURL("image/svg+xml");
+		const padImageSVGElement = signaturePad.toSVG()
+		console.log("🚀 ~ padImageSVGElement:", padImageSVGElement)
 	
 		console.log("🚀 ~ file: firma.js:217 ~ window.signaturecount:", window.signaturecount)
 		window.signaturecount = window.signaturecount + 1;
@@ -238,10 +240,16 @@ async function iniciarFirma() {
 
 
 
+		// $(`.canvasPage-${pagina}`).append(
+		// 	'<div><img id="signature' +
+		// 		window.signaturecount +
+		// 		'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none;" /></div>'
+		// );
+
 		$(`.canvasPage-${pagina}`).append(
-			'<div><img id="signature' +
-				window.signaturecount +
-				'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none;" /></div>'
+			`<div >
+			${padImageSVGElement.replace('<svg',`<svg id="signature${window.signaturecount}"`)}
+			</div>`
 		);
 
 		console.log("🚀 ~ pruebaY:", pruebaY)
@@ -260,7 +268,7 @@ async function iniciarFirma() {
 
 
 		// <!-- $('#signature1').src=url(data); -->
-		$("#signature" + window.signaturecount).attr({ src: padImage });
+		// $("#signature" + window.signaturecount).attr({ src: padImage });
 		var modal = document.getElementById("myModal");
 		modal.style.display = "none";
 		signaturePad.clear();
