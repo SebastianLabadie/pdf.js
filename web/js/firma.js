@@ -1,4 +1,4 @@
-import { ENV_documentGetURL, ENV_documentSaveUrl,ENV_BASE_URL,ENV_askLandscapeinPhones,ENV_decryptURLParams,ENV_documentDataInterface,ENV_documentGetFromPAD,ENV_documentPcToPAD,ENV_documentSendToPAD,ENV_forceLandscapeinPhones,ENV_license,ENV_signatureAskEachWhenAutoStep,ENV_signatureManualWhenAutoStep,ENV_signatureMaxAmount,ENV_signatureMinAmount, obtenerDocumento } from "./firmaUtils.js";
+import { ENV_documentGetURL, ENV_documentSaveUrl,ENV_BASE_URL,ENV_askLandscapeinPhones,ENV_decryptURLParams,ENV_documentDataInterface,ENV_documentGetFromPAD,ENV_documentPcToPAD,ENV_documentSendToPAD,ENV_forceLandscapeinPhones,ENV_license,ENV_signatureAskEachWhenAutoStep,ENV_signatureManualWhenAutoStep,ENV_signatureMaxAmount,ENV_signatureMinAmount, obtenerDocumento, guardarDocumento } from "./firmaUtils.js";
 
 const axios = window.axios
 const SignaturePad = window.SignaturePad
@@ -34,8 +34,7 @@ let documento = null
 let capturedCanvas = null
 window.signaturecount = 0
 const vecInterventoresFirmaLibre = []
-const SDTFirmaGuardar = [
-]
+const SDTFirmaGuardar = []
 
 
 
@@ -223,16 +222,18 @@ async function iniciarFirma() {
 
 		SDTFirmaGuardar.push({
 			GestionFirmaData: padData,
-			GestiongFirmaImg: padImage,
+			GestionFirmaImg: padImage,
 			GestionFirmaX: pruebaX,
 			GestionFirmaY: pruebaY,
 			GestionFirmaHojaNro: pagina,
+			GestionHojaWidth: document.querySelector(`.canvasPage-${pagina}`).offsetWidth,
+			GestionHojaHeight:document.querySelector(`.canvasPage-${pagina}`).offsetHeight,
 			GestionFirmaFecha: new Date().getTime(),
 			GestionFirmaHojaId,
 			GestionFirmaId,
 			GestionInterventorId,
 		})
-		console.log("🚀 ~ SDTFirmaGuardar:", SDTFirmaGuardar)
+		console.log("🚀 ~ SDTFirmaGuardar:", JSON.stringify(SDTFirmaGuardar))
 
 
 
@@ -242,7 +243,22 @@ async function iniciarFirma() {
 				window.signaturecount +
 				'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none;" /></div>'
 		);
-		$("#signature" + window.signaturecount).css({ top: pruebaY, left: pruebaX, position: "absolute" });
+
+		console.log("🚀 ~ pruebaY:", pruebaY)
+		console.log("🚀 ~ pruebaX:", pruebaX)
+
+		//Dividimos el pruebaX por el scale factor porque si no esta por defecto en 1 al hacer zoom se mueve la firma
+		const auxPruebaX = pruebaX / parseFloat(document.querySelector('#viewer').style.getPropertyValue("--scale-factor"));
+		const auxPruebaY = pruebaY / parseFloat(document.querySelector('#viewer').style.getPropertyValue("--scale-factor"));
+		
+		$("#signature" + window.signaturecount).css({ top: `calc(var(--scale-factor) * ${auxPruebaY}px)`, left: `calc(var(--scale-factor) * ${auxPruebaX}px)`, position: "absolute",width:'calc(var(--scale-factor) * 400px)', height: 'calc(var(--scale-factor) * 200px)' });
+
+		// `calc(var(--scale-factor) * ${pruebaY}px)`
+		//  `calc(var(--scale-factor) * ${pruebaX}px)`
+		//  ;width: calc(var(--scale-factor) * 400px);
+		//  height: calc(var(--scale-factor) * 200px)
+
+
 		// <!-- $('#signature1').src=url(data); -->
 		$("#signature" + window.signaturecount).attr({ src: padImage });
 		var modal = document.getElementById("myModal");
@@ -358,7 +374,9 @@ function getPadResponse(archivoTerminal) {
 	}, 5000);
 }
 
-function guardarPDF() {
+async function guardarPDF() {
+	//Validar que esten todas las firmas requeridas
+
 	if (window.signaturecount < 1) {
 		$("#actionTable").fadeOut("fast");
 		$("#AlertModal").fadeIn("fast").css("display", "flex");
@@ -369,38 +387,43 @@ function guardarPDF() {
 		}, 3000);
 	} else {
 		$("#actionTable").fadeOut("fast");
-		// S save
-		var xmlHttp = new XMLHttpRequest();
-		// <!-- var FileName="Hola.pdf"; -->
-		xmlHttp.open("POST", `${saveDocURL}${Params},S,${username}`, true);
-		// <!-- xmlHttp.responseType = 'blob'; -->
-		xmlHttp.onreadystatechange = function () {
-			xmlHttp.onload = function (e) {
-				if (this.status == 200) {
-					// Create a new Blob object using the response data of the onload object
-					var blob = new Blob([this.response], { type: "image/pdf" });
-					//Create a link element, hide it, direct it towards the blob, and then 'click' it programatically
-					let a = document.createElement("a");
-					a.style = "display: none";
 
-					//Create a DOMString representing the blob and point the link element towards it
-					let url = window.URL.createObjectURL(blob);
+		const res = await guardarDocumento(SDTFirmaGuardar)
+
+	// 	// S save
+	// 	var xmlHttp = new XMLHttpRequest();
+	// 	// <!-- var FileName="Hola.pdf"; -->
+	// 	xmlHttp.open("POST", `${saveDocURL}${Params},S,${username}`, true);
+	// 	// <!-- xmlHttp.responseType = 'blob'; -->
+	// 	xmlHttp.onreadystatechange = function () {
+	// 		xmlHttp.onload = function (e) {
+	// 			if (this.status == 200) {
+	// 				// Create a new Blob object using the response data of the onload object
+	// 				var blob = new Blob([this.response], { type: "image/pdf" });
+	// 				//Create a link element, hide it, direct it towards the blob, and then 'click' it programatically
+	// 				let a = document.createElement("a");
+	// 				a.style = "display: none";
+
+	// 				//Create a DOMString representing the blob and point the link element towards it
+	// 				let url = window.URL.createObjectURL(blob);
 					
-					window.URL.revokeObjectURL(url);
-					var modal = document.getElementById("FinishModal");
-					modal.style.display = "flex";
-					var modal = document.getElementById("actionTable");
-					modal.style.display = "none";
-				} else {
-					//deal with your error state here
-				}
-			};
-		};
-		xmlHttp.send(
-			'<head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="margin:0px;padding:0px;">' +
-				$(`.canvasPage-${PDFViewerApplication.page}`).html() +
-				"</body>"
-		);
+	// 				window.URL.revokeObjectURL(url);
+	// 				var modal = document.getElementById("FinishModal");
+	// 				modal.style.display = "flex";
+	// 				var modal = document.getElementById("actionTable");
+	// 				modal.style.display = "none";
+	// 			} else {
+	// 				//deal with your error state here
+	// 			}
+	// 		};
+	// 	};
+	// 	xmlHttp.send(
+	// 		'<head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="margin:0px;padding:0px;">' +
+	// 			$(`.canvasPage-${PDFViewerApplication.page}`).html() +
+	// 			"</body>"
+	// 	);
+	// }
+
 	}
 }
 
@@ -461,6 +484,8 @@ function callSignPad() {
 	}
 	pruebaX = $("#chooseSign").position().left;
 	pruebaY = $("#chooseSign").position().top;
+	const scale = parseFloat(document.querySelector('#viewer').style.getPropertyValue("--scale-factor"));
+	console.log("🚀 ~ callSignPad ~ scale:", scale)
 
 	console.log("🚀 ~ callSignPad ~ autoStepinProgress:", autoStepinProgress)
 	if (autoStepinProgress == 0) {
@@ -512,7 +537,9 @@ function callSignPad() {
 		document.getElementById("imgParte").style.backgroundImage = null; //AGREGAR DESPUES ALGUN MENSAJE DE CARGA DE FIRMA
 
 		hideChooseSign();
-		getScreenshotOfElement($(`.canvasPage-${PDFViewerApplication.page}`).get(0), signx, signy, 400, 200, function (data) {
+		
+
+		getScreenshotOfElement($(`.canvasPage-${PDFViewerApplication.page}`).get(0), signx, signy, 400*scale, 200*scale, function (data) {
 			$("#imgParte").attr("src", "data:image/png;base64," + data);
 			var modal = document.getElementById("myModal");
 			$("#myModal").css("display", "flex");
@@ -564,7 +591,7 @@ function callSignPad() {
 		document.getElementById("imgParte").style.backgroundImage = null; //AGREGAR DESPUES ALGUN MENSAJE DE CARGA DE FIRMA
 
 		hideChooseSign();
-		getScreenshotOfElement($(`.canvasPage-${autoStepPage}`).get(0), signx, signy, 400, 200, function (data) {
+		getScreenshotOfElement($(`.canvasPage-${autoStepPage}`).get(0), signx, signy, 400*scale, 200*scale, function (data) {
 			$("#imgParte").attr("src", "data:image/png;base64," + data);
 			var modal = document.getElementById("myModal");
 			$("#myModal").css("display", "flex");
@@ -711,7 +738,7 @@ function showChooseSign() {
 
 
 	$(`.canvasPage-${PDFViewerApplication.page}`).prepend(
-		`<div id="chooseSign"  style="width:400px;height:200;position:absolute;top:10;left: 0;border-style: solid;background:rgba(0,0,0,0.1);"><p class="chooseSign-text">Área a firmar...</p><div id="AccionesSign"><button id="OKSign" class="actionDivSign"><i data-feather="check-circle"></i></button><button id="CancelSign" class="actionDivSign"><i data-feather="x-circle"></i></button></div></div>`
+		`<div id="chooseSign"  style="width: calc(var(--scale-factor) * 400px);height: calc(var(--scale-factor) * 200px);position:absolute;top:10;left: 0;border-style: solid;background:rgba(0,0,0,0.1);"><p class="chooseSign-text">Área a firmar...</p><div id="AccionesSign"><button id="OKSign" class="actionDivSign"><i data-feather="check-circle"></i></button><button id="CancelSign" class="actionDivSign"><i data-feather="x-circle"></i></button></div></div>`
 	);
 	$("#chooseSign").css({ top: topPagina + "px", left: "0px", "z-index": 9998 });
 	var sigTimer = 0;
@@ -868,7 +895,7 @@ function mockDivsAutostep() {
         }
 
         //recorro GestionFirma Y uso GestionFirmaX, GestionFirmaY para crear los divs de autostep numerados
-        interventor.GestionFirma.forEach((firma, idxFirma) => {
+        interventor?.GestionFirma?.forEach((firma, idxFirma) => {
           $("#autoStep").show();
 
           console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma:", firma);
@@ -876,7 +903,7 @@ function mockDivsAutostep() {
           $(`.canvasPage-${firma.GestionFirmaHojaNro}`).prepend(
             `<div class="autoStep" autostep-page="${firma.GestionFirmaHojaNro}" autostep-interventor-idx="${indexInterventor}" 
 				autostep-firma-idx="${idxFirma}"
-				style="position: absolute;border:1px solid red;top: ${firma.GestionFirmaY}px; left: ${firma.GestionFirmaX}px;width: 400px;height: 200px;z-index:2;"></div>`
+				style="position: absolute;border:1px solid red;top: calc(var(--scale-factor) * ${firma.GestionFirmaY}px); left:calc(var(--scale-factor) * ${firma.GestionFirmaX}px);width: calc(var(--scale-factor) * 400px);height: calc(var(--scale-factor) * 200px);z-index:2;"></div>`
           );
         });
       }

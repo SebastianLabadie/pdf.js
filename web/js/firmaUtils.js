@@ -1,6 +1,6 @@
-const ENV_BASE_URL = "http://192.168.1.132:8080/SIGA/";
+const ENV_BASE_URL = "https://2f58-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
 const ENV_documentGetURL = "servlet/apsign0002?";
-const ENV_documentSaveUrl = "servlet/apsign0001?";
+const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";
 const ENV_documentGetFromPAD = "servlet/apsign0004?";
 const ENV_documentPcToPAD = "servlet/apsign0005?";
@@ -20,6 +20,7 @@ const ENV_license =
 let Params = "";
 
 let getDocURL = ENV_BASE_URL + ENV_documentGetURL;
+let saveDocURL = ENV_BASE_URL+ENV_documentSaveUrl;
 let documento= null
 
 if (window.location.search.slice(1).search("Params") == -1) {
@@ -53,13 +54,11 @@ async function obtenerDocumento() {
     // const response = await axios.get(getDocURL + Params);
     console.log(`obtenerDocumento `, documento);
     const response = await axios.get(
-      "http://192.168.1.163:8080/ICIDOCJavaOracle/ApiGestion/List?Linkguid=16fa22f4-f2c9-410a-8af2-b0a92913b136"
+      `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`
     );
 
-    const SDTGestionConf = response.data.SDTGestionConf;
 	documento = response.data;
 
-    
 
     return response.data;
   } catch (error) {
@@ -67,6 +66,12 @@ async function obtenerDocumento() {
     console.error(error);
   }
 }
+
+
+function guardarDocumento(SDTFirmaGuardar){
+	return axios.post(saveDocURL, {linkGUID:Params,Firmas:SDTFirmaGuardar});
+}
+
 
 window.getViewerContainerScroll = function getViewerContainerScroll() {
   //console.log(`getPositionPage ${page}`);
@@ -123,5 +128,6 @@ export {
   ENV_forceLandscapeinPhones,
   ENV_license,
   obtenerDocumento,
+  guardarDocumento,
   base64ToBlob
 };

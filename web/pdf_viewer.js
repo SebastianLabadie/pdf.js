@@ -886,9 +886,11 @@ class PDFViewer {
         const viewerElement =
           this._scrollMode === ScrollMode.PAGE ? null : this.viewer;
         const scale = this.currentScale;
+        console.log("🚀 ~ PDFViewer ~ .then ~ scale:", scale)
         const viewport = firstPdfPage.getViewport({
           scale: scale * PixelsPerInch.PDF_TO_CSS_UNITS,
         });
+        console.log("🚀 ~ PDFViewer ~ .then ~ viewport:", viewport)
         // Ensure that the various layers always get the correct initial size,
         // see issue 15795.
         this.viewer.style.setProperty("--scale-factor", viewport.scale);
