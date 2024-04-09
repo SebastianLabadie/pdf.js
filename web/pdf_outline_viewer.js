@@ -16,6 +16,7 @@
 import { BaseTreeViewer } from "./base_tree_viewer.js";
 import { PromiseCapability } from "pdfjs-lib";
 import { SidebarView } from "./ui_utils.js";
+import { iniciarFirma } from "./js/firma.js";
 
 /**
  * @typedef {Object} PDFOutlineViewerOptions
@@ -51,6 +52,8 @@ class PDFOutlineViewer extends BaseTreeViewer {
     });
     this.eventBus._on("pagesloaded", evt => {
       this._isPagesLoaded = !!evt.pagesCount;
+	  console.log("EVENTBUS pagesloaded");
+	  
 
       // If the capability is still pending, see the `_dispatchEvent`-method,
       // we know that the `currentOutlineItem`-button can be enabled here.

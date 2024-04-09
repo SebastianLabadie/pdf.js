@@ -372,12 +372,14 @@ const PDFViewerApplication = {
     this.eventBus = eventBus;
 
 	this.eventBus._on("pagesinit", function(evt) {
-		console.log("TERMINO DE CARGAR EL PDF ", PDFViewerApplication.pagesCount)
-		
+		console.log("EVENTBUS pagesinit", PDFViewerApplication.pagesCount)
+		// iniciarFirma()
 	})
 
 	this.eventBus._on("pagerendered", function(evt) {
-		console.log("TERMINO DE CARGAR una pagina ", evt)
+		console.log("EVENTBUS pagerendered TERMINO DE CARGAR una pagina ", evt)
+		// console.log("🚀 ~ this.eventBus._on ~ PDFViewerApplication.pagesCount:", PDFViewerApplication.pagesCount)
+		// console.log("🚀 ~ this.eventBus._on ~ evt.pageNumber:", evt.pageNumber)
 		if (evt.pageNumber === PDFViewerApplication.pagesCount) {
 			iniciarFirma()
 		}
@@ -641,7 +643,23 @@ const PDFViewerApplication = {
 		
 		//Cambio la logica para que busque el archivo en un ws
 		const documento = await obtenerDocumento()
+		
 		console.log("🚀 ~ file: app.js:627 ~ run ~ file:", file)
+
+		if (!documento.FileB64) {
+			$("#actionTable").fadeOut("fast");
+			$('#msgWarning').text("LINK NO VALIDO O EXPIRADO")
+			$("#AlertModal").fadeIn("fast").css("display", "flex");
+			// setTimeout(function () {
+			// 	// alertModal.style.display = "none";
+
+			
+			// 	$("#AlertModal").fadeOut("fast");
+			// 	$("#actionTable").fadeIn("fast");
+			// }, 3000);
+			return
+		}
+
 		//TODO CATCHEAR ERROREs
 		file = base64ToBlob(documento.FileB64)
 

@@ -42,6 +42,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--<link rel="localization" href="toolkit/pdfviewer/viewer.ftl"/>-->
 <!--#else-->
     <link rel="stylesheet" href="viewer.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css">
 <!--#endif-->
 
 <!--#if MOZCENTRAL-->
@@ -92,6 +93,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 	<script src="./js/html2canvas.js"></script>
 	<script src="./js/aes.js" integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
 	<script src="./js/jquery.ui.touch-punch.min.js"></script>
@@ -433,7 +435,6 @@ See https://github.com/adobe-type-tools/cmap-resources
         <div id="viewerContainer" tabindex="0">
           <div id="viewer" class="pdfViewer"></div>
 		  
-		  <!-- <div class="autoStep" style="position: absolute;border:1px solid red;top: 1600px; left: 300px;width: 400px;height: 200px;"></div> -->
         </div>
       </div> <!-- mainContainer -->
 
@@ -618,10 +619,54 @@ See https://github.com/adobe-type-tools/cmap-resources
 				<div class="wrapperButtons">
 					<button id="save" class="Signbuttons"><i data-feather="save"></i>Guardar</button>
 					<button id="clear" class="Signbuttons"><i data-feather="delete"></i>Limpiar</button>
-					<button id="pad" class="Signbuttons"><i data-feather="cast"></i>Enviar a Pad</button>
+					<!-- <button id="pad" class="Signbuttons"><i data-feather="cast"></i>Enviar a Pad</button> -->
 					<button id="cancelar" class="Signbuttons"><i data-feather="x"></i></button>
 				</div>
 			</div>
+		</div>
+		<!-- modal de pin -->
+		<div id="PinModal" class="modal">
+			<div id="PinModalContent" class="modal-content" >
+					<h1 style="margin-bottom: 15px;">Solicitar codigo de acceso</h1>
+					<div class="medios">
+						<div class="medio">
+							<div class="icono" id="btnPinWpp">
+								<ion-icon class="icono" name="logo-whatsapp" style="font-size: 35px;color: #25D366;"></ion-icon>
+							</div>
+							<p>WhatsApp</p>
+						</div>
+						<div class="medio">
+							<div class="icono" id="btnPinEmail">
+								<ion-icon name="mail-outline" style="font-size: 35px; color: #DB4437;"></ion-icon>
+							</div>
+							<p>Email</p>
+						</div>
+						<div class="medio" id="btnPinSms">
+							<div class="icono">
+								<ion-icon name="phone-portrait-outline" style="font-size: 35px;color: #00B2FF;"></ion-icon>
+							</div>
+							<p>SMS</p>
+						</div>
+					</div>
+
+					<div id="btnTengoCodigo" >
+						No solicitar, ya cuento con el codigo de acceso
+					</div>
+			</div>
+
+			<div id="validarpinModalContent" class="modal-content" style="display: none;">
+				<h1 style="margin-bottom: 15px;">Ingresar codigo de acceso</h1>
+				<div class="campoPIN">
+					<input id="pin1" class="pinDigit" maxlength="1" />
+					<input id="pin2" class="pinDigit" maxlength="1" />
+					<input id="pin3" class="pinDigit" maxlength="1" />
+					<input id="pin4" class="pinDigit" maxlength="1" />
+				</div>
+				<div class="button" id="btnValidarPin">Validar</div>
+				<div id="btnVolverAPedirCodigo" >
+					Volver a solicitar coidgo de acceso
+				</div>
+		</div>
 		</div>
 		<div id="FinishModal" class="modal">
 			<!-- Modal content -->
@@ -641,7 +686,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 		<div id="AlertModal" class="modal">
 			<div id="AlertModalContent" class="modal-content">
 				<i data-feather="alert-triangle"></i>
-				<div class="mensaje">DEBE INGRESAR UNA FIRMA</div>
+				<div id="msgWarning" class="mensaje" ></div>
 			</div>
 		</div>
 
@@ -684,7 +729,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--#endif-->
 
 	
-	<!-- <script src="./js/firma.js" type="module"></script> -->
+	<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+	<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 	<script>
 		feather.replace();
 	</script>

@@ -1,4 +1,4 @@
-import { ENV_documentGetURL, ENV_documentSaveUrl,ENV_BASE_URL,ENV_askLandscapeinPhones,ENV_decryptURLParams,ENV_documentDataInterface,ENV_documentGetFromPAD,ENV_documentPcToPAD,ENV_documentSendToPAD,ENV_forceLandscapeinPhones,ENV_license,ENV_signatureAskEachWhenAutoStep,ENV_signatureManualWhenAutoStep,ENV_signatureMaxAmount,ENV_signatureMinAmount, obtenerDocumento, guardarDocumento } from "./firmaUtils.js";
+import { ENV_documentGetURL, ENV_documentSaveUrl,ENV_BASE_URL,ENV_askLandscapeinPhones,ENV_decryptURLParams,ENV_documentDataInterface,ENV_documentGetFromPAD,ENV_documentPcToPAD,ENV_documentSendToPAD,ENV_forceLandscapeinPhones,ENV_license,ENV_signatureAskEachWhenAutoStep,ENV_signatureManualWhenAutoStep,ENV_signatureMaxAmount,ENV_signatureMinAmount, obtenerDocumento, guardarDocumento, enviarPin, validarPin, toastError } from "./firmaUtils.js";
 
 const axios = window.axios
 const SignaturePad = window.SignaturePad
@@ -22,8 +22,8 @@ let saveDocURL = BASE_URL+ENV_documentSaveUrl;
 let sendPADURL = BASE_URL+ENV_documentSendToPAD;
 let getPADURL = BASE_URL+ENV_documentGetFromPAD;
 let getDocData = BASE_URL+ENV_documentDataInterface;
-let forceLandscapeinPhones = BASE_URL+ENV_forceLandscapeinPhones;
-let askLandscapeinPhones = BASE_URL+ENV_askLandscapeinPhones;
+let forceLandscapeinPhones = '0'//BASE_URL+ENV_forceLandscapeinPhones;
+let askLandscapeinPhones =  '1'// BASE_URL+ENV_askLandscapeinPhones;
 let Params = "";
 let username = "PELICEGUI";
 let padResponse =0 
@@ -35,14 +35,35 @@ let capturedCanvas = null
 window.signaturecount = 0
 const vecInterventoresFirmaLibre = []
 const SDTFirmaGuardar = []
+const coordenadasFirma = {latitude:0,longitude:0}
 
 
 
 //Sacar document ready y ponner el event listener cuando se cargue el pdf
 async function iniciarFirma() {
 	console.log("🚀 ~ file: firma.js:47 ~ iniciarFirma ~ iniciarFirma")
+	
+	//Esconder popups
+	$("#FinishModal").hide();
+	$("#AlertModal").hide();
+	$("#AlertLicense").hide();
+	$("#PadModal").hide();
+	$("#PinModal").hide()
+
 	documento  = await obtenerDocumento();
 	mockDivsAutostep()
+	if ("geolocation" in navigator) {
+		/* geolocation is available */
+		navigator.geolocation.getCurrentPosition((position) => {
+			coordenadasFirma.latitude = position.coords.latitude;
+			coordenadasFirma.longitude = position.coords.longitude;
+		  });
+
+
+
+	  } else {
+		/* geolocation IS NOT available */
+	  }
 		
 	// Mostrar popup de la licencia
 	// showOrientationDiv();
@@ -62,60 +83,28 @@ async function iniciarFirma() {
 		$("#actionTable").fadeIn("fast");
 	});
 
-	let modal = document.getElementById("FinishModal");
-	modal.style.display = "none";
-	let alertModal = document.getElementById("AlertModal");
-	alertModal.style.display = "none";
-	let alertModal2 = document.getElementById("AlertLicense");
-	alertModal2.style.display = "none";
-	let padModal = document.getElementById("PadModal");
-	padModal.style.display = "none";
 
-	//Obtener parametros
-	// if (window.location.search.slice(1).search("Params") == -1) {
-	// 	Params = window.location.search.slice(1);
-	// } else {
-	// 	let params = window.location.search.slice(1).split("&");
-	// 	console.log("params:" + params);
-	// 	for (let p = 0; p < params.length; p++) {
-	// 		let nv = params[p].split("=");
-	// 		let name = nv[0],
-	// 			value = nv[1];
-	// 		if (name == "EmpresaId") {
-	// 			//Cargar EmpresaId
-	// 			EmpresaId = value;
-	// 		}
-	// 		if (name == "Params") {
-	// 			//Cargar EmpresaId
-	// 			Params = "Params=" + value;
-	// 		}
-	// 		console.log(name)
-	// 		if (name == "username") {
-	// 			username = value;
-	// 		}
-	// 	}
-	// }
-
+	
 	obtenerDatosInterface();
 
 	// Validar dispositivo y orientación
-	console.log("askLandscapeinPhones: " + askLandscapeinPhones);
-	const deviceType = getDeviceType();
+	// console.log("askLandscapeinPhones: " + askLandscapeinPhones);
+	// const deviceType = getDeviceType();
 
-	if (deviceType === "T" || deviceType === "P") {
-		console.log("entro en devicetype");
-		if (forceLandscapeinPhones === "1") {
-		} else {
-			console.log("else de force:");
-			if (parseInt(askLandscapeinPhones) === 1) {
-				console.log("valido getOrientation");
-				getOrientation();
-				window.onorientationchange = (event) => {
-					getOrientation();
-				};
-			}
-		}
-	}
+	// if (deviceType === "T" || deviceType === "P") {
+	// 	console.log("entro en devicetype");
+	// 	if (forceLandscapeinPhones === "1") {
+	// 	} else {
+	// 		console.log("else de force:");
+	// 		if (parseInt(askLandscapeinPhones) === 1) {
+	// 			console.log("valido getOrientation");
+	// 			getOrientation();
+	// 			window.screen.orientation.onchange = (event) => {
+	// 				getOrientation();
+	// 			};
+	// 		}
+	// 	}
+	// }
 	
 
 	// Manejo de licencia
@@ -153,30 +142,23 @@ async function iniciarFirma() {
 			}
 		}
 	}
-	// });
+	
 	
 	const signaturePad = new SignaturePad(document.getElementById("signature-pad"), {
 		backgroundColor: "rgba(255, 255, 255, 0)",
 		penColor: "rgb(0, 0, 0)",
-	});
-	// signaturePad.addEventListener('beginStroke',(e)=>{
-	// 	console.log('beginStroke',e.detail.pressure)
-	// })
-	// signaturePad.addEventListener('endStroke',(e)=>{
-	// 	console.log('endStroke',e.detail.pressure)
-	// })
-	// signaturePad.addEventListener('beforeUpdateStroke',(e)=>{
-	// 	console.log('beforeUpdateStroke',e.detail.pressure)
-	// })
-	// signaturePad.addEventListener('afterUpdateStroke',(e)=>{
-	// 	console.log('afterUpdateStroke',e.detail.pressure)
-	// })
+		minWidth: 0.5,
+    	maxWidth: 1.5,
+		throttle: 8,
+		minDistance: 1,
 
+	});
+	
 	
 
 	const saveButton = document.getElementById("save");
 	const cancelButton = document.getElementById("clear");
-	const padButton = document.getElementById("pad");
+	// const padButton = document.getElementById("pad");
 	saveButton.addEventListener("click", function (event) {
 		//TODO
 		//Al guardar una firma guardaremos la metadata de la firma
@@ -187,6 +169,7 @@ async function iniciarFirma() {
 		// alert("🚀 ~ file: firma.js:175 ~ toData: "+ JSON.stringify(toData))
 
 		let padImage = signaturePad.toDataURL("image/png");
+		const padSVG = signaturePad.toSVG();
 	
 		console.log("🚀 ~ file: firma.js:217 ~ window.signaturecount:", window.signaturecount)
 		window.signaturecount = window.signaturecount + 1;
@@ -220,21 +203,7 @@ async function iniciarFirma() {
 		}
 
 
-		SDTFirmaGuardar.push({
-			GestionFirmaData: padData,
-			GestionFirmaImg: padImage,
-			GestionFirmaX: pruebaX,
-			GestionFirmaY: pruebaY,
-			GestionFirmaHojaNro: pagina,
-			GestionHojaWidth: document.querySelector(`.canvasPage-${pagina}`).offsetWidth,
-			GestionHojaHeight:document.querySelector(`.canvasPage-${pagina}`).offsetHeight,
-			GestionFirmaFecha: new Date().getTime(),
-			GestionFirmaHojaId,
-			GestionFirmaId,
-			GestionInterventorId,
-		})
-		console.log("🚀 ~ SDTFirmaGuardar:", JSON.stringify(SDTFirmaGuardar))
-
+		
 
 
 
@@ -253,10 +222,27 @@ async function iniciarFirma() {
 		
 		$("#signature" + window.signaturecount).css({ top: `calc(var(--scale-factor) * ${auxPruebaY}px)`, left: `calc(var(--scale-factor) * ${auxPruebaX}px)`, position: "absolute",width:'calc(var(--scale-factor) * 400px)', height: 'calc(var(--scale-factor) * 200px)' });
 
-		// `calc(var(--scale-factor) * ${pruebaY}px)`
-		//  `calc(var(--scale-factor) * ${pruebaX}px)`
-		//  ;width: calc(var(--scale-factor) * 400px);
-		//  height: calc(var(--scale-factor) * 200px)
+
+
+		SDTFirmaGuardar.push({
+			//GestionFirmaCoordenadas: coordenadasFirma,
+			GestionFirmaData: padData,
+			GestionFirmaImg: padSVG,
+			GestionFirmaX: pruebaX,
+			GestionFirmaY: pruebaY,
+			GestionFirmaWidth: document.querySelector(`#signature${window.signaturecount}`).offsetWidth,
+			GestionFirmaHeight: document.querySelector(`#signature${window.signaturecount}`).offsetHeight,
+			GestionFirmaHojaNro: pagina,
+			GestionHojaWidth: document.querySelector(`.canvasPage-${pagina}`).offsetWidth,
+			GestionHojaHeight:document.querySelector(`.canvasPage-${pagina}`).offsetHeight,
+			GestionFirmaFecha: new Date().getTime().toString(),
+			GestionFirmaHojaId,
+			GestionFirmaId,
+			GestionInterventorId,
+		})
+		console.log("🚀 ~ SDTFirmaGuardar:", JSON.stringify(SDTFirmaGuardar))
+
+
 
 
 		// <!-- $('#signature1').src=url(data); -->
@@ -278,33 +264,35 @@ async function iniciarFirma() {
 		autoStepinProgress = 0;
 	});
 
-	padButton.addEventListener("click", async function (event) {
-		try {
-			// Consumir HTTP y enviar imagen al servidor
+	// padButton.addEventListener("click", async function (event) {
+	// 	try {
+	// 		// Consumir HTTP y enviar imagen al servidor
 
-			const response = await axios.post(sendPADURL + username, {
-				dataURL: capturedCanvas.toDataURL().replace("data:image/png;base64,", ""),
-			});
+	// 		const response = await axios.post(sendPADURL + username, {
+	// 			dataURL: capturedCanvas.toDataURL().replace("data:image/png;base64,", ""),
+	// 		});
 
-			if (response.status === 200) {
-				// Esconder todos los botones menos cancelarFirma
-				padButton.style.display = "none";
-				saveButton.style.display = "none";
-				const archivoTerminal = response.data;
-				// Mostrar mensaje de espera con icono de una tablet
-				// Validar si existe archivo creado
-				padResponse = 0;
-				getPadResponse(archivoTerminal);
-			} else {
-				// Manejar el estado de error aquí
-			}
-		} catch (error) {
-			// Manejar errores si es necesario
-			console.error(error);
-		}
-	});
+	// 		if (response.status === 200) {
+	// 			// Esconder todos los botones menos cancelarFirma
+	// 			padButton.style.display = "none";
+	// 			saveButton.style.display = "none";
+	// 			const archivoTerminal = response.data;
+	// 			// Mostrar mensaje de espera con icono de una tablet
+	// 			// Validar si existe archivo creado
+	// 			padResponse = 0;
+	// 			getPadResponse(archivoTerminal);
+	// 		} else {
+	// 			// Manejar el estado de error aquí
+	// 		}
+	// 	} catch (error) {
+	// 		// Manejar errores si es necesario
+	// 		console.error(error);
+	// 	}
+	// });
 	
 	// Llamado a funciones onClick
+	console.log('QUE ONDA')
+
 	$("#addFirma").click(() => {
 		AddFirma();
 	});
@@ -379,6 +367,7 @@ async function guardarPDF() {
 
 	if (window.signaturecount < 1) {
 		$("#actionTable").fadeOut("fast");
+		$('#msgWarning').text('DEBE INGRESAR UNA FIRMA')
 		$("#AlertModal").fadeIn("fast").css("display", "flex");
 		setTimeout(function () {
 			// alertModal.style.display = "none";
@@ -389,6 +378,10 @@ async function guardarPDF() {
 		$("#actionTable").fadeOut("fast");
 
 		const res = await guardarDocumento(SDTFirmaGuardar)
+
+
+		$("#FinishModal").fadeIn("fast").css("display", "flex");
+		
 
 	// 	// S save
 	// 	var xmlHttp = new XMLHttpRequest();
@@ -812,8 +805,8 @@ function getDeviceType() {
 }
 
 function getOrientation() {
-	console.log("getOrientation:" + window.orientation);
-	switch (window.orientation) {
+	console.log("getOrientation:" + window.screen.orientation.angle);
+	switch (window.screen.orientation.angle) {
 		case -90:
 		case 90:
 			//alert('landscape');
@@ -829,7 +822,7 @@ function getOrientation() {
 
 function showOrientationDiv() {
 	$("body").append(
-		'<div id="orientationDiv"><img class="orientationIMG" src="/assets/images/rotate-phone.png" ><p>Coloque el dispositivo en posicion horizontal.</p></div>'
+		'<div id="orientationDiv"><img class="orientationIMG" src="rotate-phone.png" ><p>Coloque el dispositivo en posicion horizontal.</p></div>'
 	);
 	$("body").css("overflow", "hidden");
 	window.scrollTo(0, -50);
@@ -864,6 +857,10 @@ function obtenerFechaHoyConFormato() {
 
 
 function mockDivsAutostep() {
+	//Si hay mas de 1 interventor quiere decir que no se va a controlar pin porque es incompatible
+	//Si hay 1 solo interventor se controla pin
+	
+
   console.log(
     "🚀 ~ file: firma.js:713 ~ mockDivsAutostep ~ mockDivsAutostep: ",
     PDFViewerApplication.pagesCount
@@ -884,6 +881,7 @@ function mockDivsAutostep() {
       (interventor, indexInterventor) => {
         console.log(`interventor `, interventor);
 
+
         if (interventor.GestionInterventorFirmaLibre) {
 			//Cargo los interventores que tienen habilitada la firma libre
 			vecInterventoresFirmaLibre.push({
@@ -898,17 +896,121 @@ function mockDivsAutostep() {
         interventor?.GestionFirma?.forEach((firma, idxFirma) => {
           $("#autoStep").show();
 
-          console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma:", firma);
-
-          $(`.canvasPage-${firma.GestionFirmaHojaNro}`).prepend(
+        //   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma:", firma);
+		//   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma.GestionFirmaHojaNro:", `.canvasPage-${firma.GestionFirmaHojaNro}`)
+        //  console.log('🚀 ~ interventor.GestionFirma.forEach ~ firma canva: ',$(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`)) 
+		  $(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`).prepend(
             `<div class="autoStep" autostep-page="${firma.GestionFirmaHojaNro}" autostep-interventor-idx="${indexInterventor}" 
 				autostep-firma-idx="${idxFirma}"
-				style="position: absolute;border:1px solid red;top: calc(var(--scale-factor) * ${firma.GestionFirmaY}px); left:calc(var(--scale-factor) * ${firma.GestionFirmaX}px);width: calc(var(--scale-factor) * 400px);height: calc(var(--scale-factor) * 200px);z-index:2;"></div>`
+				style="position: absolute;top: calc(var(--scale-factor) * ${parseInt(firma.GestionFirmaY)}px); left:calc(var(--scale-factor) * ${parseInt(firma.GestionFirmaX)}px);width: calc(var(--scale-factor) * 400px);height: calc(var(--scale-factor) * 200px);z-index:2;"></div>`
           );
         });
       }
     );
+
+	//Si hay 1 solo interventor controlar pin
+	console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.length:", SDTGestionConf.GestionInterventor.length)
+	if (SDTGestionConf.GestionInterventor.length === 1) {
+		
+		if (SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin) {
+			console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.GestionInterventorRequierePin:", SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin)
+			$('#actionTable').hide()
+			
+			//mostrar popup de pin
+			$("#PinModal").fadeIn("fast").css("display", "flex");
+		}
+	}
+
+	accionesModalPin()
+
   }
+}
+
+
+function accionesModalPin() {
+	const reqEnviarPin = {
+		Empresaid: documento?.SDTGestionConf?.EmpresaId,
+		GestionId: documento?.SDTGestionConf?.GestionId,
+		GestionInterventorId:documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
+		Medio:''
+	}
+
+	let pin = ''
+
+	$('#btnTengoCodigo').click(() => {
+		$('#PinModalContent').hide()
+		$('#validarpinModalContent').show()
+	})
+
+	$('#btnPinWpp').click(async () => {
+		reqEnviarPin.Medio = 'W'
+		const res = await enviarPin(reqEnviarPin)
+		if (res) {
+			$('#PinModalContent').hide()
+			$('#validarpinModalContent').show()
+		}
+	})
+	$('#btnPinEmail').click(async () => {
+		reqEnviarPin.Medio = 'E'
+		const res = await enviarPin(reqEnviarPin)
+		if (res) {
+			$('#PinModalContent').hide()
+			$('#validarpinModalContent').show()
+		}
+	})
+
+	$('#btnPinSms').click(async () => {
+		reqEnviarPin.Medio = 'S'
+		const res = await enviarPin(reqEnviarPin)
+		if (res) {
+			$('#PinModalContent').hide()
+			$('#validarpinModalContent').show()
+		}
+	})
+
+	//Acciones de validar pin
+	const inputsPin = document.querySelectorAll(".pinDigit");
+	inputsPin.forEach((input, key) => {
+		if (key !== 0) {
+		  input.addEventListener("click", function () {
+			input.focus();
+		  });
+		}
+		input.addEventListener("keyup", function () {
+		  if (input.value) {
+			if (key === 3) {
+			  // Last one 
+			  console.log("🚀 ~ pin:", pin);
+			} else {
+			  inputsPin[key + 1].focus();
+			}
+		  }
+		});
+	  });
+
+	$('#btnVolverAPedirCodigo').click(() => {
+		$('#validarpinModalContent').hide()
+		$('#PinModalContent').show()
+	}
+	)
+
+	$('#btnValidarPin').click(async () => {
+		pin = [...inputsPin].map((input) => input.value).join("");
+		const reqValidarPin = {
+			Empresaid: documento?.SDTGestionConf?.EmpresaId,
+			GestionId: documento?.SDTGestionConf?.GestionId,
+			GestionInterventorId:documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
+			pin
+		}
+		const res = await validarPin(reqValidarPin)
+		if (res && res.isOk) {
+			$("#PinModal").fadeOut("fast");
+			$('#actionTable').show()
+		}else{
+			toastError(res.ErrorDsc)
+		}
+	})
+
 }
 
 export {iniciarFirma}

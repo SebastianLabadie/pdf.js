@@ -620,6 +620,8 @@ function getVisibleElements({
       return a.id - b.id; // ensure stability
     });
   }
+
+  console.log('getVisibleElement: ',{ first, last, views: visible, ids })
   return { first, last, views: visible, ids };
 }
 
@@ -632,6 +634,8 @@ function normalizeWheelEventDirection(evt) {
   }
   return delta;
 }
+
+
 
 function normalizeWheelEventDelta(evt) {
   const deltaMode = evt.deltaMode; // Avoid being affected by bug 1392460.

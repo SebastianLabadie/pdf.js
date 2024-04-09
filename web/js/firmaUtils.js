@@ -1,4 +1,5 @@
-const ENV_BASE_URL = "https://2f58-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
+const ENV_BASE_URL =
+  " https://50bb-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
 const ENV_documentGetURL = "servlet/apsign0002?";
 const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";
@@ -20,8 +21,8 @@ const ENV_license =
 let Params = "";
 
 let getDocURL = ENV_BASE_URL + ENV_documentGetURL;
-let saveDocURL = ENV_BASE_URL+ENV_documentSaveUrl;
-let documento= null
+let saveDocURL = ENV_BASE_URL + ENV_documentSaveUrl;
+let documento = null;
 
 if (window.location.search.slice(1).search("Params") == -1) {
   Params = window.location.search.slice(1);
@@ -39,11 +40,10 @@ if (window.location.search.slice(1).search("Params") == -1) {
   }
 }
 
-
 async function obtenerDocumento() {
- if (documento) {
-	return documento;
- }
+  if (documento) {
+    return documento;
+  }
 
   try {
     console.log("🚀 ~ file: firma.js:708 ~ obtenerDocumento ~ Params:", Params);
@@ -51,14 +51,12 @@ async function obtenerDocumento() {
       "🚀 ~ file: firma.js:708 ~ obtenerDocumento ~ getDocURL:",
       getDocURL
     );
-    // const response = await axios.get(getDocURL + Params);
     console.log(`obtenerDocumento `, documento);
     const response = await axios.get(
       `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`
     );
 
-	documento = response.data;
-
+    documento = response.data;
 
     return response.data;
   } catch (error) {
@@ -67,11 +65,64 @@ async function obtenerDocumento() {
   }
 }
 
-
-function guardarDocumento(SDTFirmaGuardar){
-	return axios.post(saveDocURL, {linkGUID:Params,Firmas:SDTFirmaGuardar});
+function guardarDocumento(SDTFirmaGuardar) {
+  return axios.post(
+    saveDocURL,
+    { linkGUID: Params, Firmas: SDTFirmaGuardar },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    }
+  );
 }
 
+async function enviarPin(request) {
+  try {
+    const res = await axios.post(
+      `${ENV_BASE_URL}ApiGestion/createPin`,
+      request
+    );
+    return res.data;
+  } catch (error) {
+    console.log("🚀 ~ enviarPin ~ error:", error);
+  }
+
+  return null;
+}
+
+async function validarPin(request) {
+  try {
+    const res = await axios.post(
+      `${ENV_BASE_URL}ApiGestion/validatePin`,
+      request
+    );
+    return res.data;
+  } catch (error) {
+    console.log("🚀 ~ validarPin ~ error:", error);
+  }
+
+  return null;
+}
+
+function toastError(message) {
+	toastr.options = {
+		"closeButton": true,
+		"debug": false,
+		"newestOnTop": false,
+		"progressBar": true,
+		"positionClass": "toast-top-right",
+		"preventDuplicates": false,
+		"onclick": null,
+		"showDuration": "1000",
+		"hideDuration": "1000",
+		"timeOut": "5000",
+		"extendedTimeOut": "1000"
+	  }
+
+	  toastr.error(message,'Error')
+}
 
 window.getViewerContainerScroll = function getViewerContainerScroll() {
   //console.log(`getPositionPage ${page}`);
@@ -129,5 +180,8 @@ export {
   ENV_license,
   obtenerDocumento,
   guardarDocumento,
-  base64ToBlob
+  base64ToBlob,
+  enviarPin,
+  validarPin,
+  toastError
 };

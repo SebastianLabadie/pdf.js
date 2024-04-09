@@ -1669,21 +1669,37 @@ class PDFViewer {
   }
 
   _getVisiblePages() {
-    const views =
-        this._scrollMode === ScrollMode.PAGE
-          ? this.#scrollModePageState.pages
-          : this._pages,
-      horizontal = this._scrollMode === ScrollMode.HORIZONTAL,
-      rtl = horizontal && this._isContainerRtl;
+		let visible = [];
+		const ids = new Set();
+		let currentPage = this._pages[this._currentPageNumber - 1];
+		for (let i = 0; i < this.pagesCount; i++) {
+		let aPage = this._pages[i];
+		ids.add(aPage.id);
+		visible.push({ id: aPage.id, view: aPage });
+		}
+		return { first: currentPage, last: currentPage, views: visible, ids };
+	}
 
-    return getVisibleElements({
-      scrollEl: this.container,
-      views,
-      sortByVisibility: true,
-      horizontal,
-      rtl,
-    });
-  }
+//   _getVisiblePages() {
+// 	// return 4
+
+//     const views =
+//         this._scrollMode === ScrollMode.PAGE
+//           ? this.#scrollModePageState.pages
+//           : this._pages,
+//       horizontal = this._scrollMode === ScrollMode.HORIZONTAL,
+//       rtl = horizontal && this._isContainerRtl;
+
+//     return getVisibleElements({
+//       scrollEl: this.container,
+//       views,
+//       sortByVisibility: true,
+//       horizontal,
+//       rtl,
+//     });
+//   }
+
+  
 
   cleanup() {
     for (const pageView of this._pages) {
