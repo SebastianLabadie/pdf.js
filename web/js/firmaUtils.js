@@ -1,5 +1,5 @@
-const ENV_BASE_URL =
-  " https://50bb-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
+//const ENV_BASE_URL ="https://50bb-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
+const ENV_BASE_URL ="http://1.1.9.126:8080/ICIDOC/";
 const ENV_documentGetURL = "servlet/apsign0002?";
 const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";
@@ -56,12 +56,15 @@ async function obtenerDocumento() {
       `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`
     );
 
+    console.log("🚀 ~ obtenerDocumento ~ response:", JSON.stringify(response.data).substring(0,100))
+
+
     documento = response.data;
 
     return response.data;
   } catch (error) {
     // Manejar errores si es necesario
-    console.error(error);
+    console.error('error obtenerDocumento ',error);
   }
 }
 

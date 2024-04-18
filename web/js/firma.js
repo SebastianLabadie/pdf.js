@@ -381,42 +381,22 @@ async function guardarPDF() {
 
 
 		$("#FinishModal").fadeIn("fast").css("display", "flex");
-		
-
-	// 	// S save
-	// 	var xmlHttp = new XMLHttpRequest();
-	// 	// <!-- var FileName="Hola.pdf"; -->
-	// 	xmlHttp.open("POST", `${saveDocURL}${Params},S,${username}`, true);
-	// 	// <!-- xmlHttp.responseType = 'blob'; -->
-	// 	xmlHttp.onreadystatechange = function () {
-	// 		xmlHttp.onload = function (e) {
-	// 			if (this.status == 200) {
-	// 				// Create a new Blob object using the response data of the onload object
-	// 				var blob = new Blob([this.response], { type: "image/pdf" });
-	// 				//Create a link element, hide it, direct it towards the blob, and then 'click' it programatically
-	// 				let a = document.createElement("a");
-	// 				a.style = "display: none";
-
-	// 				//Create a DOMString representing the blob and point the link element towards it
-	// 				let url = window.URL.createObjectURL(blob);
-					
-	// 				window.URL.revokeObjectURL(url);
-	// 				var modal = document.getElementById("FinishModal");
-	// 				modal.style.display = "flex";
-	// 				var modal = document.getElementById("actionTable");
-	// 				modal.style.display = "none";
-	// 			} else {
-	// 				//deal with your error state here
-	// 			}
-	// 		};
-	// 	};
-	// 	xmlHttp.send(
-	// 		'<head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="margin:0px;padding:0px;">' +
-	// 			$(`.canvasPage-${PDFViewerApplication.page}`).html() +
-	// 			"</body>"
-	// 	);
-	// }
-
+		console.log('POST MESSAGE')
+		try {
+			if(window.ReactNativeWebView) {
+				// send data object to React Native (only string)
+				const dataObject = { accion:'FINALIZAR'}
+				console.log('Hay ReactNativeWebView')
+				setTimeout(() => {
+					window.ReactNativeWebView.postMessage(JSON.stringify(dataObject))
+				}, 1500);
+			 }else{
+				console.log('NO Hay ReactNativeWebView')
+			 }
+		} catch (error) {
+			console.log('ERROR POST MESSAGE')
+		}
+		// /history.back();
 	}
 }
 
