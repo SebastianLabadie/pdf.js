@@ -1,4 +1,4 @@
-import { ENV_documentGetURL, ENV_documentSaveUrl,ENV_BASE_URL,ENV_askLandscapeinPhones,ENV_decryptURLParams,ENV_documentDataInterface,ENV_documentGetFromPAD,ENV_documentPcToPAD,ENV_documentSendToPAD,ENV_forceLandscapeinPhones,ENV_license,ENV_signatureAskEachWhenAutoStep,ENV_signatureManualWhenAutoStep,ENV_signatureMaxAmount,ENV_signatureMinAmount, obtenerDocumento, guardarDocumento, enviarPin, validarPin, toastError } from "./firmaUtils.js";
+import { ENV_documentGetURL, ENV_documentSaveUrl, ENV_BASE_URL, ENV_askLandscapeinPhones, ENV_decryptURLParams, ENV_documentDataInterface, ENV_documentGetFromPAD, ENV_documentPcToPAD, ENV_documentSendToPAD, ENV_forceLandscapeinPhones, ENV_license, ENV_signatureAskEachWhenAutoStep, ENV_signatureManualWhenAutoStep, ENV_signatureMaxAmount, ENV_signatureMinAmount, obtenerDocumento, guardarDocumento, enviarPin, validarPin, toastError, guardarImagen } from "./firmaUtils.js";
 
 const axios = window.axios
 const SignaturePad = window.SignaturePad
@@ -18,15 +18,15 @@ let pruebaX = 0;
 let licdata = ENV_license;
 let a_d = new Date();
 const BASE_URL = ENV_BASE_URL;
-let saveDocURL = BASE_URL+ENV_documentSaveUrl;
-let sendPADURL = BASE_URL+ENV_documentSendToPAD;
-let getPADURL = BASE_URL+ENV_documentGetFromPAD;
-let getDocData = BASE_URL+ENV_documentDataInterface;
+let saveDocURL = BASE_URL + ENV_documentSaveUrl;
+let sendPADURL = BASE_URL + ENV_documentSendToPAD;
+let getPADURL = BASE_URL + ENV_documentGetFromPAD;
+let getDocData = BASE_URL + ENV_documentDataInterface;
 let forceLandscapeinPhones = '0'//BASE_URL+ENV_forceLandscapeinPhones;
-let askLandscapeinPhones =  '1'// BASE_URL+ENV_askLandscapeinPhones;
+let askLandscapeinPhones = '1'// BASE_URL+ENV_askLandscapeinPhones;
 let Params = "";
 let username = "PELICEGUI";
-let padResponse =0 
+let padResponse = 0
 let signx = 0;
 let signy = 0;
 var { pdfjsLib } = globalThis;
@@ -35,14 +35,14 @@ let capturedCanvas = null
 window.signaturecount = 0
 const vecInterventoresFirmaLibre = []
 const SDTFirmaGuardar = []
-const coordenadasFirma = {latitude:0,longitude:0}
+const coordenadasFirma = { latitude: 0, longitude: 0 }
 
 
 
 //Sacar document ready y ponner el event listener cuando se cargue el pdf
 async function iniciarFirma() {
 	console.log("🚀 ~ file: firma.js:47 ~ iniciarFirma ~ iniciarFirma")
-	
+
 	//Esconder popups
 	$("#FinishModal").hide();
 	$("#AlertModal").hide();
@@ -50,21 +50,11 @@ async function iniciarFirma() {
 	$("#PadModal").hide();
 	$("#PinModal").hide()
 
-	documento  = await obtenerDocumento();
+
+	documento = await obtenerDocumento();
 	mockDivsAutostep()
-	if ("geolocation" in navigator) {
-		/* geolocation is available */
-		navigator.geolocation.getCurrentPosition((position) => {
-			coordenadasFirma.latitude = position.coords.latitude;
-			coordenadasFirma.longitude = position.coords.longitude;
-		  });
+	
 
-
-
-	  } else {
-		/* geolocation IS NOT available */
-	  }
-		
 	// Mostrar popup de la licencia
 	// showOrientationDiv();
 	$("#license-info").click(function () {
@@ -84,8 +74,7 @@ async function iniciarFirma() {
 	});
 
 
-	
-	obtenerDatosInterface();
+
 
 	// Validar dispositivo y orientación
 	// console.log("askLandscapeinPhones: " + askLandscapeinPhones);
@@ -105,7 +94,7 @@ async function iniciarFirma() {
 	// 		}
 	// 	}
 	// }
-	
+
 
 	// Manejo de licencia
 	getSignArea();
@@ -142,41 +131,36 @@ async function iniciarFirma() {
 			}
 		}
 	}
-	
-	
+
+
 	const signaturePad = new SignaturePad(document.getElementById("signature-pad"), {
 		backgroundColor: "rgba(255, 255, 255, 0)",
 		penColor: "rgb(0, 0, 0)",
 		minWidth: 0.5,
-    	maxWidth: 1.5,
+		maxWidth: 1.5,
 		throttle: 8,
 		minDistance: 1,
 
 	});
-	
-	
+
+
 
 	const saveButton = document.getElementById("save");
 	const cancelButton = document.getElementById("clear");
 	// const padButton = document.getElementById("pad");
 	saveButton.addEventListener("click", function (event) {
-		//TODO
-		//Al guardar una firma guardaremos la metadata de la firma
-		//Hay que validar si es obligatoria la firma que haya algo
-
 
 		let padData = signaturePad.toData();
-		// alert("🚀 ~ file: firma.js:175 ~ toData: "+ JSON.stringify(toData))
 
 		let padImage = signaturePad.toDataURL("image/png");
 		const padSVG = signaturePad.toSVG();
-	
+
 		console.log("🚀 ~ file: firma.js:217 ~ window.signaturecount:", window.signaturecount)
 		window.signaturecount = window.signaturecount + 1;
 		let pagina = 0
-		let GestionFirmaHojaId = '',GestionFirmaId='',GestionInterventorId=''
-		let idxInterventor =  $(".autoStep:first").attr("autostep-interventor-idx");
-		let idxFirma =  $(".autoStep:first").attr("autostep-firma-idx");
+		let GestionFirmaHojaId = '', GestionFirmaId = '', GestionInterventorId = ''
+		let idxInterventor = $(".autoStep:first").attr("autostep-interventor-idx");
+		let idxFirma = $(".autoStep:first").attr("autostep-firma-idx");
 
 		//Si es autostep
 		if (autoStepinProgress == 1) {
@@ -184,7 +168,7 @@ async function iniciarFirma() {
 			pagina = $(".autoStep:first").attr("autostep-page");
 			GestionFirmaHojaId = documento.SDTGestionConf.GestionInterventor[idxInterventor].GestionFirma[idxFirma].GestionFirmaHojaId
 			GestionFirmaId = documento.SDTGestionConf.GestionInterventor[idxInterventor].GestionFirma[idxFirma].GestionFirmaId
-			GestionInterventorId = documento.SDTGestionConf.GestionInterventor[idxInterventor].GestionInterventorId 
+			GestionInterventorId = documento.SDTGestionConf.GestionInterventor[idxInterventor].GestionInterventorId
 
 		} else {
 			pagina = PDFViewerApplication.page
@@ -192,25 +176,25 @@ async function iniciarFirma() {
 			GestionFirmaId = '00000000-0000-0000-0000-000000000000'
 
 			//Si solo hay 1 interventor con firmal libre habilitada, cargar idxInterventor con el interventor que tiene firma libre habilitada
-			if (vecInterventoresFirmaLibre.length === 1 ) {
-				GestionInterventorId = vecInterventoresFirmaLibre[0].GestionInterventorId 
-			}else{
+			if (vecInterventoresFirmaLibre.length === 1) {
+				GestionInterventorId = vecInterventoresFirmaLibre[0].GestionInterventorId
+			} else {
 				//Si hay mas de 1 interventor con firma libre habilitada, buscamos en el selection cual fue el interventor que firmo
 				const interventorSelected = $(`#interventorSelect`).val()
-				GestionInterventorId = vecInterventoresFirmaLibre[interventorSelected].GestionInterventorId 
+				GestionInterventorId = vecInterventoresFirmaLibre[interventorSelected].GestionInterventorId
 			}
 
 		}
 
 
-		
+
 
 
 
 		$(`.canvasPage-${pagina}`).append(
 			'<div><img id="signature' +
-				window.signaturecount +
-				'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none;" /></div>'
+			window.signaturecount +
+			'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none;" /></div>'
 		);
 
 		console.log("🚀 ~ pruebaY:", pruebaY)
@@ -219,8 +203,8 @@ async function iniciarFirma() {
 		//Dividimos el pruebaX por el scale factor porque si no esta por defecto en 1 al hacer zoom se mueve la firma
 		const auxPruebaX = pruebaX / parseFloat(document.querySelector('#viewer').style.getPropertyValue("--scale-factor"));
 		const auxPruebaY = pruebaY / parseFloat(document.querySelector('#viewer').style.getPropertyValue("--scale-factor"));
-		
-		$("#signature" + window.signaturecount).css({ top: `calc(var(--scale-factor) * ${auxPruebaY}px)`, left: `calc(var(--scale-factor) * ${auxPruebaX}px)`, position: "absolute",width:'calc(var(--scale-factor) * 400px)', height: 'calc(var(--scale-factor) * 200px)' });
+
+		$("#signature" + window.signaturecount).css({ top: `calc(var(--scale-factor) * ${auxPruebaY}px)`, left: `calc(var(--scale-factor) * ${auxPruebaX}px)`, position: "absolute", width: 'calc(var(--scale-factor) * 400px)', height: 'calc(var(--scale-factor) * 200px)' });
 
 
 
@@ -234,7 +218,7 @@ async function iniciarFirma() {
 			GestionFirmaHeight: document.querySelector(`#signature${window.signaturecount}`).offsetHeight,
 			GestionFirmaHojaNro: pagina,
 			GestionHojaWidth: document.querySelector(`.canvasPage-${pagina}`).offsetWidth,
-			GestionHojaHeight:document.querySelector(`.canvasPage-${pagina}`).offsetHeight,
+			GestionHojaHeight: document.querySelector(`.canvasPage-${pagina}`).offsetHeight,
 			GestionFirmaFecha: new Date().getTime().toString(),
 			GestionFirmaHojaId,
 			GestionFirmaId,
@@ -252,7 +236,6 @@ async function iniciarFirma() {
 		signaturePad.clear();
 
 		$("#actionTable").fadeIn("fast");
-		// }
 		if (autoStepinProgress == 1) {
 			$(".autoStep:first").remove();
 			nextSign();
@@ -289,10 +272,18 @@ async function iniciarFirma() {
 	// 		console.error(error);
 	// 	}
 	// });
-	
-	// Llamado a funciones onClick
-	console.log('QUE ONDA')
 
+	//Despues de validar todo, se muestran los actionButtons
+	$('#addFirma').show()
+	$('#guardarPDF').show()
+
+	//Si hay imagenes que se deban cargar, mostrar el boton de imagenes
+	if (documento.SDTGestionConf.GestionInterventor.some(interventor => interventor.Imagenes.length > 0)) {
+		$('#btnImagenes').show()
+	}
+
+
+	// Llamado a funciones onClick
 	$("#addFirma").click(() => {
 		AddFirma();
 	});
@@ -311,6 +302,12 @@ async function iniciarFirma() {
 	$("#guardarPDF").click(async () => {
 		await guardarPDF();
 	});
+	$("#btnImagenes").click(() => {
+		showModalImagenes();
+	});
+	$("#closeModalImagenes").click(() => {
+		$("#ModalImagenes").fadeOut("fast");
+	});
 };
 
 function getPadResponse(archivoTerminal) {
@@ -322,7 +319,7 @@ function getPadResponse(archivoTerminal) {
 		try {
 			const response = await axios.get(getPADURL + username + "_FIRMA_LISTA");
 
-			console.log(`PAD FIRMO `,response.data)
+			console.log(`PAD FIRMO `, response.data)
 			if (response.data !== "") {
 				padResponse = 1;
 
@@ -333,8 +330,8 @@ function getPadResponse(archivoTerminal) {
 					window.signaturecount = window.signaturecount + 1;
 					$(`.canvasPage-${PDFViewerApplication.page}`).append(
 						'<img id="signature' +
-							window.signaturecount +
-							'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none" />'
+						window.signaturecount +
+						'" draggable="false" style=" -webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-o-user-select: none;user-select: none" />'
 					);
 					$("#signature" + window.signaturecount).css({ top: pruebaY, left: pruebaX, position: "absolute" });
 					$("#signature" + window.signaturecount).attr({ src: response.data });
@@ -364,7 +361,6 @@ function getPadResponse(archivoTerminal) {
 
 async function guardarPDF() {
 	//Validar que esten todas las firmas requeridas
-
 	if (window.signaturecount < 1) {
 		$("#actionTable").fadeOut("fast");
 		$('#msgWarning').text('DEBE INGRESAR UNA FIRMA')
@@ -374,29 +370,67 @@ async function guardarPDF() {
 			$("#AlertModal").fadeOut("fast");
 			$("#actionTable").fadeIn("fast");
 		}, 3000);
-	} else {
+		return 
+	} 
+
+	//Validar que se hayan cargado las imagenes obligatorias
+	let imagenesRequeridasCargadas = true;
+
+    documento.SDTGestionConf.GestionInterventor.forEach(interventor => {
+      interventor.Imagenes.forEach(imagen => {
+        if (imagen.GestionImagenObligatoria === true && !imagen.GestionImagen) {
+          imagenesRequeridasCargadas = false;
+        }
+      });
+    });
+
+    if (!imagenesRequeridasCargadas) {
 		$("#actionTable").fadeOut("fast");
+		$('#msgWarning').text('Debe cargar las imagenes obligatorias')
+		$("#AlertModal").fadeIn("fast").css("display", "flex");
+		setTimeout(function () {
+			// alertModal.style.display = "none";
+			$("#AlertModal").fadeOut("fast");
+			$("#actionTable").fadeIn("fast");
+		}, 3000);
+		return 
+    }
 
-		const res = await guardarDocumento(SDTFirmaGuardar)
+	if ("geolocation" in navigator) {
+		/* geolocation is available */
+		navigator.geolocation.getCurrentPosition((position) => {
+			coordenadasFirma.latitude = position.coords.latitude;
+			coordenadasFirma.longitude = position.coords.longitude;
+		});
+	} 
+
+	//Modificar el SDTFirmaGuardar con las coordenadas de la firma
+	// SDTFirmaGuardar.forEach(firma => {
+	// 	firma.GestionFirmaCoordenadas = coordenadasFirma;
+	// });
 
 
-		$("#FinishModal").fadeIn("fast").css("display", "flex");
-		console.log('POST MESSAGE')
-		try {
-			if(window.ReactNativeWebView) {
-				// send data object to React Native (only string)
-				const dataObject = { accion:'FINALIZAR'}
-				console.log('Hay ReactNativeWebView')
-				setTimeout(() => {
-					window.ReactNativeWebView.postMessage(JSON.stringify(dataObject))
-				}, 1500);
-			 }else{
-				console.log('NO Hay ReactNativeWebView')
-			 }
-		} catch (error) {
-			console.log('ERROR POST MESSAGE')
+	//Guardar firma en base de datos
+	$("#actionTable").fadeOut("fast");
+
+	const res = await guardarDocumento(SDTFirmaGuardar)
+
+
+	$("#FinishModal").fadeIn("fast").css("display", "flex");
+	console.log('POST MESSAGE')
+	try {
+		if (window.ReactNativeWebView) {
+			// send data object to React Native (only string)
+			const dataObject = { accion: 'FINALIZAR' }
+			console.log('Hay ReactNativeWebView')
+			setTimeout(() => {
+				window.ReactNativeWebView.postMessage(JSON.stringify(dataObject))
+			}, 1500);
+		} else {
+			console.log('NO Hay ReactNativeWebView')
 		}
-		// /history.back();
+	} catch (error) {
+		console.log('ERROR POST MESSAGE')
 	}
 }
 
@@ -464,13 +498,13 @@ function callSignPad() {
 	if (autoStepinProgress == 0) {
 		//Si solo hay 1 interventor con firmal libre habilitada, cargar idxInterventor con el interventor que tiene firma libre habilitada
 		console.log("🚀 ~ callSignPad ~ vecInterventoresFirmaLibre:", vecInterventoresFirmaLibre)
-		if (vecInterventoresFirmaLibre.length === 1 ) {
+		if (vecInterventoresFirmaLibre.length === 1) {
 			const idxInterventor = vecInterventoresFirmaLibre[0].indexInterventor
 
 			//Obtener nombre de interventor que esta firmando
 			const interventorNombre = documento.SDTGestionConf.GestionInterventor[idxInterventor].GestionInterventorNombre
 			$(`#interventorNombre`).text(`Firma de: ${interventorNombre}`)
-		}else{
+		} else {
 			//Si hay mas de 1 interventor con firma libre habilitada, agregamos un selection para que el usuario seleccione el interventor que esta firmando
 			$(`#interventorNombre`).hide()
 			$(`#interventorSelectWrapper`).remove()
@@ -478,9 +512,9 @@ function callSignPad() {
 				<div id="interventorSelectWrapper" style="text-align: center;">
 					<p>Seleccione el interventor que esta firmando</p>
 					<select id="interventorSelect" class="form-control" style="margin-bottom: 10px;">
-						${vecInterventoresFirmaLibre.map((interventor,idx) => (
-							`<option value="${idx}">${interventor.GestionInterventorNombre}</option>`
-						))}
+						${vecInterventoresFirmaLibre.map((interventor, idx) => (
+				`<option value="${idx}">${interventor.GestionInterventorNombre}</option>`
+			))}
 					</select>
 				</div>
 			`)
@@ -503,22 +537,22 @@ function callSignPad() {
 		console.log("pruebaX:" + pruebaX);
 		console.log("pruebaY:" + pruebaY);
 
-		
+
 
 		//Sacar scerenshot de pagina activa
 		// When the user clicks the button, open the modal
 		document.getElementById("imgParte").style.backgroundImage = null; //AGREGAR DESPUES ALGUN MENSAJE DE CARGA DE FIRMA
 
 		hideChooseSign();
-		
 
-		getScreenshotOfElement($(`.canvasPage-${PDFViewerApplication.page}`).get(0), signx, signy, 400*scale, 200*scale, function (data) {
+
+		getScreenshotOfElement($(`.canvasPage-${PDFViewerApplication.page}`).get(0), signx, signy, 400 * scale, 200 * scale, function (data) {
 			$("#imgParte").attr("src", "data:image/png;base64," + data);
 			var modal = document.getElementById("myModal");
 			$("#myModal").css("display", "flex");
-			
 
-			
+
+
 			// $('#chooseSign').show();
 			showChooseSign();
 			//modal.style.display = "block";
@@ -534,7 +568,7 @@ function callSignPad() {
 		var left = $(".autoStep:first").attr("left");
 		const autoStepPage = $(".autoStep:first").attr("autostep-page");
 		const autoStepInterventorIdx = $(".autoStep:first").attr("autostep-interventor-idx");
-		
+
 		signx = $(".autoStep:first").offset().left;
 		console.log("🚀 ~ file: firma.js:431 ~ callSignPad ~ signx:", signx)
 		signy = $(".autoStep:first").offset().top;
@@ -549,7 +583,7 @@ function callSignPad() {
 		$(`#interventorNombre`).text(`Firma de: ${interventorNombre}`)
 
 
-		
+
 
 		$("body,html").animate(
 			{
@@ -564,19 +598,19 @@ function callSignPad() {
 		document.getElementById("imgParte").style.backgroundImage = null; //AGREGAR DESPUES ALGUN MENSAJE DE CARGA DE FIRMA
 
 		hideChooseSign();
-		getScreenshotOfElement($(`.canvasPage-${autoStepPage}`).get(0), signx, signy, 400*scale, 200*scale, function (data) {
+		getScreenshotOfElement($(`.canvasPage-${autoStepPage}`).get(0), signx, signy, 400 * scale, 200 * scale, function (data) {
 			$("#imgParte").attr("src", "data:image/png;base64," + data);
 			var modal = document.getElementById("myModal");
 			$("#myModal").css("display", "flex");
-			
-			
+
+
 			// $('#chooseSign').show();
 			showChooseSign();
 			//modal.style.display = "block";
 			hideChooseSign();
 		});
 	}
-	
+
 }
 
 function getScreenshotOfElement(element, posX, posY, width, height, callback) {
@@ -663,19 +697,19 @@ function getSignArea() {
 		// console.log(licdata);
 		var a = Number(
 			valsign.substring(4990, 4990 + 1) +
-				valsign.substring(2580, 2580 + 1) +
-				valsign.substring(1746, 1746 + 1) +
-				valsign.substring(4074, 4074 + 1)
+			valsign.substring(2580, 2580 + 1) +
+			valsign.substring(1746, 1746 + 1) +
+			valsign.substring(4074, 4074 + 1)
 		);
 		var b = Number(valsign.substring(365, 365 + 1) + valsign.substring(1900, 1900 + 1)) - 1;
 		var c = Number(valsign.substring(2981, 2981 + 1) + valsign.substring(1150, 1150 + 1));
 		var signRRLL = new Date(a, b, c);
 		console.log(
 			"a: " +
-				valsign.substring(4990, 4990 + 1) +
-				valsign.substring(2580, 2580 + 1) +
-				valsign.substring(1746, 1746 + 1) +
-				valsign.substring(4074, 4074 + 1)
+			valsign.substring(4990, 4990 + 1) +
+			valsign.substring(2580, 2580 + 1) +
+			valsign.substring(1746, 1746 + 1) +
+			valsign.substring(4074, 4074 + 1)
 		);
 		console.log("b: " + valsign.substring(365, 365 + 1) + valsign.substring(1900, 1900 + 1));
 		console.log("c: " + valsign.substring(2981, 2981 + 1) + valsign.substring(1150, 1150 + 1));
@@ -686,7 +720,7 @@ function getSignArea() {
 			signArea = true;
 		}
 		return signArea;
-	} catch (error) {}
+	} catch (error) { }
 }
 
 function hideChooseSign() {
@@ -749,8 +783,8 @@ function showChooseSign() {
 		console.log(`canvasPage-${PDFViewerApplication.page}`)
 		$("#chooseSign").draggable({
 			containment: `.canvasPage-${PDFViewerApplication.page}`,
-			start: function () {},
-			drag: function () {},
+			start: function () { },
+			drag: function () { },
 			stop: function () {
 				signx = $("#chooseSign").offset().left;
 				signy = $("#chooseSign").offset().top;
@@ -758,13 +792,13 @@ function showChooseSign() {
 		});
 	});
 
-	$("#OKSign").click(function () {
-		callSignPad();
-	});
+	// $("#OKSign").click(function () {
+	// 	callSignPad();
+	// });
 
-	$("#CancelSign").click(function () {
-		cancelarFirma();
-	});
+	// $("#CancelSign").click(function () {
+	// 	cancelarFirma();
+	// });
 
 	feather.replace();
 }
@@ -800,6 +834,230 @@ function getOrientation() {
 	}
 }
 
+
+
+function showModalImagenes() {
+    $("#ModalImagenes").fadeIn("fast").css("display", "flex");
+    $("#ModalImagenesContent").empty();
+
+    const grid = $("<div>").addClass("image-grid");
+
+    documento.SDTGestionConf.GestionInterventor.forEach((interventor) => {
+        interventor.Imagenes.forEach((imagen) => {
+            const card = $("<div>").addClass("image-card");
+            
+            card.append($("<div>").addClass("image-info")
+                .append($("<span>").addClass("interventor-name").text(interventor.GestionInterventorNombre))
+                .append($("<span>").addClass("image-name").text(imagen.GestionImagenNombre)));
+
+            const actionsDiv = $("<div>").addClass("image-actions");
+
+            if (!imagen.GestionImagen) {
+                actionsDiv.append(
+                    $("<button>").addClass("customBtn")
+                        .text("Agregar")
+                        .click(() => handleImageAction("add", interventor, imagen))
+                );
+            } else {
+                actionsDiv.append(
+                    $("<button>").addClass("customBtn")
+                        .text("Ver")
+                        .click(() => handleImageAction("view", interventor, imagen))
+                );
+                actionsDiv.append(
+                    $("<button>").addClass("customBtn")
+                        .text("Editar")
+                        .click(() => handleImageAction("update", interventor, imagen))
+                );
+                actionsDiv.append(
+                    $("<button>").addClass("customBtn")
+                        .text("Eliminar")
+                        .click(() => handleImageAction("delete", interventor, imagen))
+                );
+            }
+
+            card.append(actionsDiv);
+            grid.append(card);
+        });
+    });
+
+    $("#ModalImagenesContent").append(grid);
+}
+
+function handleImageAction(action, interventor, imagen) {
+    console.log(`Action: ${action}`);
+    console.log(`Interventor: ${interventor.GestionInterventorNombre}`);
+    console.log(`Image: ${imagen ? imagen.GestionImagenNombre : "No hay imagen"}`);
+
+    switch (action) {
+        case "add":
+        case "update":
+            handleAddOrUpdate(action, interventor, imagen);
+            break;
+
+        case "view":
+            if (imagen.GestionImagen) {
+                const $imageContainer = $('<div>').css({
+                    'max-width': '100%',
+                    'max-height': '80vh',
+                    'overflow': 'auto'
+                });
+                const $image = $('<img>').attr('src', `data:image/jpeg;base64,${imagen.GestionImagen}`).css('max-width', '100%');
+                const $closeButton = $('<button>').addClass('customBtn').text('Close').click(() => showModalImagenes());
+
+                $imageContainer.append($image);
+                $('#ModalImagenesContent').empty().append($imageContainer).append($closeButton);
+            } else {
+                alert('No hay imagen disponible para ver. Por favor, use la opción "Agregar".');
+            }
+            break;
+
+        case "delete":
+            if (imagen.GestionImagen) {
+                const $confirmDialog = $('<div>').text('¿Está seguro que desea eliminar esta imagen?');
+                const $confirmButton = $('<button>').addClass('customBtn').text('Confirmar').click(async () => {
+                    try {
+                        imagen.GestionImagen = '';
+                        const res = await guardarImagen(imagen);
+                        console.log(`Image deleted: ${res}`);
+                        showModalImagenes();
+                    } catch (error) {
+                        console.log(`Error eliminando la imagen: ${error}`);
+                        alert('No se pudo eliminar la imagen. Por favor, intente nuevamente.');
+                    }
+                });
+                const $cancelButton = $('<button>').addClass('customBtn').text('Cancelar').click(() => showModalImagenes());
+
+                $('#ModalImagenesContent').empty().append($confirmDialog).append($confirmButton).append($cancelButton);
+            } else {
+                alert('No hay imagen disponible para eliminar. Por favor, use la opción "Agregar".');
+            }
+            break;
+
+        default:
+            console.error(`Acción no válida: ${action}`);
+    }
+}
+
+function handleAddOrUpdate(action, interventor, imagen) {
+    const $buttonContainer = $('<div>');
+    const $cameraButton = $('<button>').addClass('customBtn').text('Camara');
+    const $galleryButton = $('<button>').addClass('customBtn').text('Galeria');
+
+    $buttonContainer.append($cameraButton).append($galleryButton);
+
+    if (action === "update") {
+        const $cancelButton = $('<button>').addClass('customBtn').text('Cancelar').click(() => showModalImagenes());
+        $buttonContainer.append($cancelButton);
+    }
+
+    $('#ModalImagenesContent').empty().append($buttonContainer);
+
+    $cameraButton.on('click', async function() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+			const $video = $('<video>').prop('autoplay', true).css({
+				'max-width': '80%',
+				'max-height': window.screen.orientation.angle === 90 || window.screen.orientation.angle === -90 ? '30vh' : '60vh',
+				'overflow': 'auto'
+			});
+
+           
+
+            const $captureButton = $('<button>').addClass('customBtn').text('Tomar foto');
+
+            $video[0].srcObject = stream;
+
+            $('#ModalImagenesContent').empty().append($video).append($captureButton);
+
+            $captureButton.on('click', function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = $video[0].videoWidth;
+                canvas.height = $video[0].videoHeight;
+                canvas.getContext('2d').drawImage($video[0], 0, 0);
+                stream.getTracks().forEach(track => track.stop());
+                storeImage(interventor, imagen, canvas.toDataURL('image/jpeg'));
+            });
+        } catch (err) {
+            console.error("Error accediendo a la camara:", err);
+            alert("No se pudo acceder a la camara. Por favor, use la opción de galería.");
+        }
+    });
+
+    $galleryButton.on('click', function() {
+        console.log("Gallery button clicked");
+        
+        const $fileInput = $('<input>').attr({
+            type: 'file',
+            accept: 'image/*'
+        }).css('display', 'none');
+
+        $fileInput.on('change', function(event) {
+            console.log("File input change event triggered");
+            console.log("Event:", event);
+            
+            const file = event.target.files[0];
+            console.log("Selected file:", file);
+            
+            if (file) {
+                console.log("File selected, creating FileReader");
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    console.log("FileReader onload event triggered");
+                    console.log("FileReader result:", e.target.result.substring(0, 50) + "...");
+                    storeImage(interventor, imagen, e.target.result);
+                    $fileInput.remove(); // Remove the input after processing
+                };
+                
+                reader.onerror = function(e) {
+                    console.error("FileReader error:", e);
+                    $fileInput.remove(); // Remove the input if there's an error
+                };
+                
+                console.log("Starting to read file as DataURL");
+                reader.readAsDataURL(file);
+            } else {
+                console.log("No file selected");
+                $fileInput.remove(); // Remove the input if no file was selected
+            }
+        });
+
+        console.log("Appending file input to body");
+        $('body').append($fileInput);
+        
+        console.log("Triggering file input click");
+        $fileInput.trigger('click');
+    });
+
+    if (action === "update" && !imagen.GestionImagen) {
+        alert('No image available to update. Por favor, use la opción "Agregar".');
+    }
+}
+
+async function storeImage(interventor, imagen, base64Image) {
+    console.log(`Storing image for interventor: ${interventor.GestionInterventorNombre}`);
+    console.log(`Base64 image data: ${base64Image.substring(0, 50)}...`);
+
+    // Update the interventor's image data
+    imagen.GestionImagen = base64Image.replace('data:image/jpeg;base64,', '').replace('data:image/png;base64,', '').replace('data:image/jpg;base64,', '')
+
+	try {
+		const res   = await guardarImagen(imagen)
+		console.log(`Image stored: ${res}`);
+	} catch (error) {
+		console.log(`Error storing image: ${error}`);
+	}
+
+    // Refresh the modal to show the new image
+    showModalImagenes();
+}
+
+$("#closeModalImagenes").click(() => {
+	$("#ModalImagenes").fadeOut("fast");
+	$('#toolbarContainer').css('display', 'block');
+});
+
 function showOrientationDiv() {
 	$("body").append(
 		'<div id="orientationDiv"><img class="orientationIMG" src="rotate-phone.png" ><p>Coloque el dispositivo en posicion horizontal.</p></div>'
@@ -808,102 +1066,77 @@ function showOrientationDiv() {
 	window.scrollTo(0, -50);
 }
 
-async function obtenerDatosInterface() {
-	try {
-		const req = {
-			Params,
-		};
-		const res = await axios.post(getDocData, req);
-		console.log(`res `, res.data);
-		$("#headerTitulo").text(res.data.GestionNombre);
-		$("#headerCliente").text(`Cliente #${res.data.ClienteNro}`);
-		const fechaHoyConFormato = obtenerFechaHoyConFormato();
-		$("#headerFecha").text(fechaHoyConFormato);
-	} catch (error) {
-		console.log(`error `, error);
-	}
-}
-
-function obtenerFechaHoyConFormato() {
-	const fecha = new Date();
-
-	const dia = String(fecha.getDate()).padStart(2, "0"); // Obtiene el día y lo formatea a dos dígitos
-	const mes = String(fecha.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por eso sumamos 1
-	const año = fecha.getFullYear(); // Obtiene el año de forma completa
-
-	return `${dia}/${mes}/${año}`;
-}
 
 
 
 function mockDivsAutostep() {
 	//Si hay mas de 1 interventor quiere decir que no se va a controlar pin porque es incompatible
 	//Si hay 1 solo interventor se controla pin
-	
-
-  console.log(
-    "🚀 ~ file: firma.js:713 ~ mockDivsAutostep ~ mockDivsAutostep: ",
-    PDFViewerApplication.pagesCount
-  );
-  const SDTGestionConf = documento?.SDTGestionConf;
-  console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf:", SDTGestionConf);
-  if (SDTGestionConf) {
-    $("#autoStep").hide();
-	$("#addFirma").hide();
-
-    //Si no tiene interventores va a ser firma libre por defecto
-	if (SDTGestionConf.GestionInterventor.length == 0) {
-		$("#addFirma").show();
-	}
-
-    //Recorremos los interventores
-    SDTGestionConf.GestionInterventor.forEach(
-      (interventor, indexInterventor) => {
-        console.log(`interventor `, interventor);
 
 
-        if (interventor.GestionInterventorFirmaLibre) {
-			//Cargo los interventores que tienen habilitada la firma libre
-			vecInterventoresFirmaLibre.push({
-				GestionInterventorId: interventor.GestionInterventorId,
-                GestionInterventorNombre: interventor.GestionInterventorNombre,
-				indexInterventor
-			});
-          $("#addFirma").show();
-        }
+	console.log(
+		"🚀 ~ file: firma.js:713 ~ mockDivsAutostep ~ mockDivsAutostep: ",
+		PDFViewerApplication.pagesCount
+	);
+	const SDTGestionConf = documento?.SDTGestionConf;
+	console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf:", SDTGestionConf);
+	if (SDTGestionConf) {
+		$("#autoStep").hide();
+		$("#addFirma").hide();
 
-        //recorro GestionFirma Y uso GestionFirmaX, GestionFirmaY para crear los divs de autostep numerados
-        interventor?.GestionFirma?.forEach((firma, idxFirma) => {
-          $("#autoStep").show();
+		//Si no tiene interventores va a ser firma libre por defecto
+		if (SDTGestionConf.GestionInterventor.length == 0) {
+			$("#addFirma").show();
+		}
 
-        //   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma:", firma);
-		//   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma.GestionFirmaHojaNro:", `.canvasPage-${firma.GestionFirmaHojaNro}`)
-        //  console.log('🚀 ~ interventor.GestionFirma.forEach ~ firma canva: ',$(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`)) 
-		  $(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`).prepend(
-            `<div class="autoStep" autostep-page="${firma.GestionFirmaHojaNro}" autostep-interventor-idx="${indexInterventor}" 
+		//Recorremos los interventores
+		SDTGestionConf.GestionInterventor.forEach(
+			(interventor, indexInterventor) => {
+				console.log(`interventor `, interventor);
+
+
+				if (interventor.GestionInterventorFirmaLibre) {
+					//Cargo los interventores que tienen habilitada la firma libre
+					vecInterventoresFirmaLibre.push({
+						GestionInterventorId: interventor.GestionInterventorId,
+						GestionInterventorNombre: interventor.GestionInterventorNombre,
+						indexInterventor
+					});
+					$("#addFirma").show();
+				}
+
+				//recorro GestionFirma Y uso GestionFirmaX, GestionFirmaY para crear los divs de autostep numerados
+				interventor?.GestionFirma?.forEach((firma, idxFirma) => {
+					$("#autoStep").show();
+
+					//   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma:", firma);
+					//   console.log("🚀 ~ interventor.GestionFirma.forEach ~ firma.GestionFirmaHojaNro:", `.canvasPage-${firma.GestionFirmaHojaNro}`)
+					//  console.log('🚀 ~ interventor.GestionFirma.forEach ~ firma canva: ',$(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`)) 
+					$(`.canvasPage-${parseInt(firma.GestionFirmaHojaNro)}`).prepend(
+						`<div class="autoStep" autostep-page="${firma.GestionFirmaHojaNro}" autostep-interventor-idx="${indexInterventor}" 
 				autostep-firma-idx="${idxFirma}"
 				style="position: absolute;top: calc(var(--scale-factor) * ${parseInt(firma.GestionFirmaY)}px); left:calc(var(--scale-factor) * ${parseInt(firma.GestionFirmaX)}px);width: calc(var(--scale-factor) * 400px);height: calc(var(--scale-factor) * 200px);z-index:2;"></div>`
-          );
-        });
-      }
-    );
+					);
+				});
+			}
+		);
 
-	//Si hay 1 solo interventor controlar pin
-	console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.length:", SDTGestionConf.GestionInterventor.length)
-	if (SDTGestionConf.GestionInterventor.length === 1) {
-		
-		if (SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin) {
-			console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.GestionInterventorRequierePin:", SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin)
-			$('#actionTable').hide()
-			
-			//mostrar popup de pin
-			$("#PinModal").fadeIn("fast").css("display", "flex");
+		//Si hay 1 solo interventor controlar pin
+		console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.length:", SDTGestionConf.GestionInterventor.length)
+		if (SDTGestionConf.GestionInterventor.length === 1) {
+
+			if (SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin) {
+				console.log("🚀 ~ mockDivsAutostep ~ SDTGestionConf.GestionInterventor.GestionInterventorRequierePin:", SDTGestionConf.GestionInterventor[0].GestionInterventorRequierePin)
+				$('#actionTable').hide()
+
+				//mostrar popup de pin
+				$("#PinModal").fadeIn("fast").css("display", "flex");
+			}
 		}
+
+		accionesModalPin()
+
 	}
-
-	accionesModalPin()
-
-  }
 }
 
 
@@ -911,8 +1144,8 @@ function accionesModalPin() {
 	const reqEnviarPin = {
 		Empresaid: documento?.SDTGestionConf?.EmpresaId,
 		GestionId: documento?.SDTGestionConf?.GestionId,
-		GestionInterventorId:documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
-		Medio:''
+		GestionInterventorId: documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
+		Medio: ''
 	}
 
 	let pin = ''
@@ -952,21 +1185,21 @@ function accionesModalPin() {
 	const inputsPin = document.querySelectorAll(".pinDigit");
 	inputsPin.forEach((input, key) => {
 		if (key !== 0) {
-		  input.addEventListener("click", function () {
-			input.focus();
-		  });
+			input.addEventListener("click", function () {
+				input.focus();
+			});
 		}
 		input.addEventListener("keyup", function () {
-		  if (input.value) {
-			if (key === 3) {
-			  // Last one 
-			  console.log("🚀 ~ pin:", pin);
-			} else {
-			  inputsPin[key + 1].focus();
+			if (input.value) {
+				if (key === 3) {
+					// Last one 
+					console.log("🚀 ~ pin:", pin);
+				} else {
+					inputsPin[key + 1].focus();
+				}
 			}
-		  }
 		});
-	  });
+	});
 
 	$('#btnVolverAPedirCodigo').click(() => {
 		$('#validarpinModalContent').hide()
@@ -979,18 +1212,18 @@ function accionesModalPin() {
 		const reqValidarPin = {
 			Empresaid: documento?.SDTGestionConf?.EmpresaId,
 			GestionId: documento?.SDTGestionConf?.GestionId,
-			GestionInterventorId:documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
+			GestionInterventorId: documento?.SDTGestionConf?.GestionInterventor[0].GestionInterventorId,
 			pin
 		}
 		const res = await validarPin(reqValidarPin)
 		if (res && res.isOk) {
 			$("#PinModal").fadeOut("fast");
 			$('#actionTable').show()
-		}else{
+		} else {
 			toastError(res.ErrorDsc)
 		}
 	})
 
 }
 
-export {iniciarFirma}
+export { iniciarFirma }

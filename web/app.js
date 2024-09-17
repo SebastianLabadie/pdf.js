@@ -2369,6 +2369,7 @@ function webViewerSidebarViewChanged({ view }) {
 function webViewerUpdateViewarea({ location }) {
   if (PDFViewerApplication.isInitialViewSet) {
     // Only update the storage when the document has been loaded *and* rendered.
+	console.log("🚀 ~ webViewerUpdateViewarea ~ location.pageNumber,:", location.pageNumber,)
     PDFViewerApplication.store
       ?.setMultiple({
         page: location.pageNumber,

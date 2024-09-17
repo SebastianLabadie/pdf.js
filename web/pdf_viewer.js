@@ -240,13 +240,13 @@ class PDFViewer {
    * @param {PDFViewerOptions} options
    */
   constructor(options) {
-    const viewerVersion =
-      typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_VERSION") : null;
-    if (version !== viewerVersion) {
-      throw new Error(
-        `The API version "${version}" does not match the Viewer version "${viewerVersion}".`
-      );
-    }
+    // const viewerVersion =
+    //   typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_VERSION") : null;
+    // if (version !== viewerVersion) {
+    //   throw new Error(
+    //     `The API version "${version}" does not match the Viewer version "${viewerVersion}".`
+    //   );
+    // }
     this.container = options.container;
     this.viewer = options.viewer || options.container.firstElementChild;
 
@@ -1598,7 +1598,9 @@ class PDFViewer {
 
   update() {
     const visible = this._getVisiblePages();
-    const visiblePages = visible.views,
+
+	const visible2 = this._getVisiblePagesOriginal();
+    const visiblePages = visible2.views,
       numVisiblePages = visiblePages.length;
 
     if (numVisiblePages === 0) {
@@ -1608,6 +1610,8 @@ class PDFViewer {
     this.#buffer.resize(newCacheSize, visible.ids);
 
     this.renderingQueue.renderHighestPriority(visible);
+
+	
 
     const isSimpleLayout =
       this._spreadMode === SpreadMode.NONE &&
@@ -1680,24 +1684,24 @@ class PDFViewer {
 		return { first: currentPage, last: currentPage, views: visible, ids };
 	}
 
-//   _getVisiblePages() {
-// 	// return 4
+  _getVisiblePagesOriginal() {
+	// return 4
 
-//     const views =
-//         this._scrollMode === ScrollMode.PAGE
-//           ? this.#scrollModePageState.pages
-//           : this._pages,
-//       horizontal = this._scrollMode === ScrollMode.HORIZONTAL,
-//       rtl = horizontal && this._isContainerRtl;
+    const views =
+        this._scrollMode === ScrollMode.PAGE
+          ? this.#scrollModePageState.pages
+          : this._pages,
+      horizontal = this._scrollMode === ScrollMode.HORIZONTAL,
+      rtl = horizontal && this._isContainerRtl;
 
-//     return getVisibleElements({
-//       scrollEl: this.container,
-//       views,
-//       sortByVisibility: true,
-//       horizontal,
-//       rtl,
-//     });
-//   }
+    return getVisibleElements({
+      scrollEl: this.container,
+      views,
+      sortByVisibility: true,
+      horizontal,
+      rtl,
+    });
+  }
 
   
 

@@ -99,6 +99,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 	<script src="./js/jquery.ui.touch-punch.min.js"></script>
 	<script src="./js/jquery.cookie.js"></script>
 	<script src="./js/feather.min.js"></script>
+
+    
 	<!-- <script src="./js/firmaUtils.js" ></script> -->
 	<script src="viewer.js" type="module"></script>
 <!--#endif-->
@@ -388,11 +390,11 @@ See https://github.com/adobe-type-tools/cmap-resources
               </div>
               <div id="toolbarViewerMiddle">
 				<div class="header-left-marco">
-					<span id="headerTitulo">titulo</span>
-					<span class="small" id="headerCliente">cliente</span>
+					<!-- <span id="headerTitulo">titulo</span> -->
+					<!-- <span class="small" id="headerCliente">cliente</span> -->
 				</div>
 				<div class="header-right-marco">
-					<span class="small" id="headerFecha">fecha</span>
+					<!-- <span class="small" id="headerFecha">fecha</span> -->
 				</div>
                 <div class="splitToolbarButton">
                   <button id="zoomOut" class="toolbarButton" title="Zoom Out" tabindex="21" data-l10n-id="pdfjs-zoom-out-button">
@@ -520,7 +522,7 @@ See https://github.com/adobe-type-tools/cmap-resources
             <div id="overallDescription">
               <span id="dialogLabel" data-l10n-id="pdfjs-editor-alt-text-dialog-label" class="title">Choose an option</span>
               <span id="dialogDescription" data-l10n-id="pdfjs-editor-alt-text-dialog-description">
-                Alt text (alternative text) helps when people can’t see the image or when it doesn’t load.
+                Alt text (alternative text) helps when people can't see the image or when it doesn't load.
               </span>
             </div>
             <div id="addDescription">
@@ -536,7 +538,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </div>
               </div>
               <div class="descriptionArea">
-                <textarea id="descriptionTextarea" placeholder="For example, “A young man sits down at a table to eat a meal”" aria-labelledby="descriptionAreaLabel" data-l10n-id="pdfjs-editor-alt-text-textarea" tabindex="0"></textarea>
+                <textarea id="descriptionTextarea" placeholder="For example, "A young man sits down at a table to eat a meal"" aria-labelledby="descriptionAreaLabel" data-l10n-id="pdfjs-editor-alt-text-textarea" tabindex="0"></textarea>
               </div>
             </div>
             <div id="markAsDecorative">
@@ -577,17 +579,20 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--#endif-->
       </div>  <!-- dialogContainer -->
 
-		<div id="actionTable">
-			<div id="addFirma" class="actionDiv" tooltip="Agregar firma" flow="left">
-				<i data-feather="edit"></i>
-			</div>
-			<div id="guardarPDF" class="actionDiv" tooltip="Guardar firma" flow="left" style="top: 140px">
-				<i data-feather="save"></i>
-			</div>
-			<div id="autoStep" class="actionDiv" tooltip="Auto firma" flow="left" style="top: 200px">
-				<i data-feather="play"></i>
-			</div>
-		</div>
+      <div id="actionTable">
+        <div id="addFirma" class="actionDiv" tooltip="Agregar firma" flow="left" style="display: none;">
+          <i data-feather="edit"></i>
+        </div>
+        <div id="guardarPDF" class="actionDiv" tooltip="Guardar firma" flow="left" style="display: none;">
+          <i data-feather="save"></i>
+        </div>
+        <div id="autoStep" class="actionDiv" tooltip="Auto firma" flow="left" style="display: none;">
+          <i data-feather="play"></i>
+        </div>
+        <div id="btnImagenes" class="actionDiv" tooltip="Imagenes" flow="left" style="display: none;">
+          <i data-feather="image"></i>
+        </div>
+      </div>
 		<!-- The Modal -->
 		<div id="myModal" class="modal">
 			<!-- Modal content -->
@@ -720,6 +725,17 @@ See https://github.com/adobe-type-tools/cmap-resources
 				<div class="mensaje">Esperando firma desde dispositivo</div>
 			</div>
 		</div>
+
+
+    <div id="ModalImagenes" class="modal">
+      <div class="modal-content">
+        <button id="closeModalImagenes" class="close-button">
+          <i data-feather="x"></i>
+        </button>
+        <h2 class="modal-title">Imágenes</h2>
+        <div id="ModalImagenesContent"></div>
+      </div>
+    </div>
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>

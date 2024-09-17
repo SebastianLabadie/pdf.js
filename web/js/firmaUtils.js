@@ -1,5 +1,5 @@
-//const ENV_BASE_URL ="https://50bb-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
-const ENV_BASE_URL ="http://1.1.9.126:8080/ICIDOC/";
+const ENV_BASE_URL ="https://0d31-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
+// const ENV_BASE_URL ="http://1.1.9.126:8080/ICIDOC/";
 const ENV_documentGetURL = "servlet/apsign0002?";
 const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";
@@ -53,7 +53,11 @@ async function obtenerDocumento() {
     );
     console.log(`obtenerDocumento `, documento);
     const response = await axios.get(
-      `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`
+      `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`,{
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
     );
 
     console.log("🚀 ~ obtenerDocumento ~ response:", JSON.stringify(response.data).substring(0,100))
@@ -81,11 +85,29 @@ function guardarDocumento(SDTFirmaGuardar) {
   );
 }
 
+async function guardarImagen(Imagen) {
+  return axios.post(
+    `${ENV_BASE_URL}ApiGestion/setImage`,
+    { linkGUID: Params, Imagen },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    }
+  );
+}
+
 async function enviarPin(request) {
   try {
     const res = await axios.post(
       `${ENV_BASE_URL}ApiGestion/createPin`,
-      request
+      request,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
     );
     return res.data;
   } catch (error) {
@@ -99,7 +121,12 @@ async function validarPin(request) {
   try {
     const res = await axios.post(
       `${ENV_BASE_URL}ApiGestion/validatePin`,
-      request
+      request,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
     );
     return res.data;
   } catch (error) {
@@ -186,5 +213,6 @@ export {
   base64ToBlob,
   enviarPin,
   validarPin,
-  toastError
+  toastError,
+  guardarImagen
 };
