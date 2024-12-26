@@ -83,7 +83,7 @@ class AnnotationElementFactory {
         return new LinkAnnotationElement(parameters);
 
       case AnnotationType.TEXT:
-        return new TextAnnotationElement(parameters);
+        // return new TextAnnotationElement(parameters);
 
       case AnnotationType.WIDGET:
         const fieldType = parameters.data.fieldType;

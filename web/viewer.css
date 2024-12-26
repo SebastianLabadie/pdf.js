@@ -2285,9 +2285,13 @@ i {
   overflow-y: scroll;
 
 }
-
 #ModalImagenes .modal-content::-webkit-scrollbar {
   display: none;
+}
+
+#ModalImagenes .modal-content {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 

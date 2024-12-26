@@ -1,5 +1,7 @@
-const ENV_BASE_URL ="https://0d31-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
+// const ENV_BASE_URL ="https://15ae-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
 // const ENV_BASE_URL ="http://1.1.9.126:8080/ICIDOC/";
+const ENV_BASE_URL = "https://apollo.tigo.co.cr:8082/ICIDOC/";
+// const ENV_BASE_URL = "http://10.7.148.128:8080/ICIDOC/";
 const ENV_documentGetURL = "servlet/apsign0002?";
 const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";
@@ -53,22 +55,25 @@ async function obtenerDocumento() {
     );
     console.log(`obtenerDocumento `, documento);
     const response = await axios.get(
-      `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`,{
+      `${ENV_BASE_URL}ApiGestion/List?Linkguid=${Params}`,
+      {
         headers: {
           "ngrok-skip-browser-warning": "69420",
         },
       }
     );
 
-    console.log("🚀 ~ obtenerDocumento ~ response:", JSON.stringify(response.data).substring(0,100))
-
+    console.log(
+      "🚀 ~ obtenerDocumento ~ response:",
+      JSON.stringify(response.data).substring(0, 100)
+    );
 
     documento = response.data;
 
     return response.data;
   } catch (error) {
     // Manejar errores si es necesario
-    console.error('error obtenerDocumento ',error);
+    console.error("error obtenerDocumento ", error);
   }
 }
 
@@ -137,21 +142,21 @@ async function validarPin(request) {
 }
 
 function toastError(message) {
-	toastr.options = {
-		"closeButton": true,
-		"debug": false,
-		"newestOnTop": false,
-		"progressBar": true,
-		"positionClass": "toast-top-right",
-		"preventDuplicates": false,
-		"onclick": null,
-		"showDuration": "1000",
-		"hideDuration": "1000",
-		"timeOut": "5000",
-		"extendedTimeOut": "1000"
-	  }
+  toastr.options = {
+    closeButton: true,
+    debug: false,
+    newestOnTop: false,
+    progressBar: true,
+    positionClass: "toast-top-right",
+    preventDuplicates: false,
+    onclick: null,
+    showDuration: "1000",
+    hideDuration: "1000",
+    timeOut: "5000",
+    extendedTimeOut: "1000",
+  };
 
-	  toastr.error(message,'Error')
+  toastr.error(message, "Error");
 }
 
 window.getViewerContainerScroll = function getViewerContainerScroll() {
@@ -214,5 +219,5 @@ export {
   enviarPin,
   validarPin,
   toastError,
-  guardarImagen
+  guardarImagen,
 };
