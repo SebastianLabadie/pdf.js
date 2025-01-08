@@ -81,9 +81,6 @@ import { iniciarFirma } from "./js/firma.js";
 const FORCE_PAGES_LOADED_TIMEOUT = 10000; // ms
 const WHEEL_ZOOM_DISABLED_TIMEOUT = 1000; // ms
 
-
-
-
 const ViewOnLoad = {
   UNKNOWN: -1,
   PREVIOUS: 0, // Default value.
@@ -371,21 +368,19 @@ const PDFViewerApplication = {
       : new EventBus();
     this.eventBus = eventBus;
 
-	this.eventBus._on("pagesinit", function(evt) {
-		console.log("EVENTBUS pagesinit", PDFViewerApplication.pagesCount)
-		// iniciarFirma()
-	})
+    this.eventBus._on("pagesinit", function (evt) {
+      console.log("EVENTBUS pagesinit", PDFViewerApplication.pagesCount);
+      // iniciarFirma()
+    });
 
-	this.eventBus._on("pagerendered", function(evt) {
-		console.log("EVENTBUS pagerendered TERMINO DE CARGAR una pagina ", evt)
-		// console.log("🚀 ~ this.eventBus._on ~ PDFViewerApplication.pagesCount:", PDFViewerApplication.pagesCount)
-		// console.log("🚀 ~ this.eventBus._on ~ evt.pageNumber:", evt.pageNumber)
-		if (evt.pageNumber === PDFViewerApplication.pagesCount) {
-			iniciarFirma()
-		}
-	})
-
-	
+    this.eventBus._on("pagerendered", function (evt) {
+      console.log("EVENTBUS pagerendered TERMINO DE CARGAR una pagina ", evt);
+      // console.log("🚀 ~ this.eventBus._on ~ PDFViewerApplication.pagesCount:", PDFViewerApplication.pagesCount)
+      // console.log("🚀 ~ this.eventBus._on ~ evt.pageNumber:", evt.pageNumber)
+      if (evt.pageNumber === PDFViewerApplication.pagesCount) {
+        iniciarFirma();
+      }
+    });
 
     this.overlayManager = new OverlayManager();
 
@@ -639,38 +634,23 @@ const PDFViewerApplication = {
     const { appConfig, eventBus } = this;
     let file;
     if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
+      // Cambio la logica para que busque el archivo en un ws
+      const documento = await obtenerDocumento();
 
-		
-		//Cambio la logica para que busque el archivo en un ws
-		const documento = await obtenerDocumento()
-		
-		console.log("🚀 ~ file: app.js:627 ~ run ~ file:", file)
+      console.log("🚀 ~ file: app.js:627 ~ run ~ file:", file);
 
-		if (!documento.FileB64) {
-			$("#actionTable").fadeOut("fast");
-			$('#msgWarning').text("LINK NO VALIDO O EXPIRADO")
-			$("#AlertModal").fadeIn("fast").css("display", "flex");
-			// setTimeout(function () {
-			// 	// alertModal.style.display = "none";
+      if (!documento.FileB64) {
+        displayAlert("LINK NO VALIDO O EXPIRADO", "warning");
+        return;
+      }
 
-			
-			// 	$("#AlertModal").fadeOut("fast");
-			// 	$("#actionTable").fadeIn("fast");
-			// }, 3000);
-			return
-		}
+      // TODO CATCHEAR ERROREs
+      file = base64ToBlob(documento.FileB64);
 
-		//TODO CATCHEAR ERROREs
-		file = base64ToBlob(documento.FileB64)
-
-    //   const queryString = document.location.search.substring(1);
-    //   const params = parseQueryString(queryString);
-    //   file = params.get("file") ?? AppOptions.get("defaultUrl");
-    //   validateFileURL(file);
-
-
-
-
+      //   const queryString = document.location.search.substring(1);
+      //   const params = parseQueryString(queryString);
+      //   file = params.get("file") ?? AppOptions.get("defaultUrl");
+      //   validateFileURL(file);
     } else if (PDFJSDev.test("MOZCENTRAL")) {
       file = window.location.href;
     } else if (PDFJSDev.test("CHROME")) {
@@ -1097,10 +1077,9 @@ const PDFViewerApplication = {
   },
 
   async download(options = {}) {
-	
-	  const url = this._downloadUrl,
+    const url = this._downloadUrl,
       filename = this._docFilename;
-      console.log("🚀 ~ file: app.js:1053 ~ download ~ url:", url)
+    console.log("🚀 ~ file: app.js:1053 ~ download ~ url:", url);
     try {
       this._ensureDownloadComplete();
 
@@ -1119,7 +1098,7 @@ const PDFViewerApplication = {
     if (this._saveInProgress) {
       return;
     }
-	console.log("🚀 ~ file: app.js:1072 ~ save ~ options", options)
+    console.log("🚀 ~ file: app.js:1072 ~ save ~ options", options);
     this._saveInProgress = true;
     await this.pdfScriptingManager.dispatchWillSave();
 
@@ -1243,7 +1222,10 @@ const PDFViewerApplication = {
       this.loadingBar?.hide();
 
       firstPagePromise.then(() => {
-		console.log("🚀 ~ file: app.js:1201 ~ load ~ firstPagePromise.then ~ firstPagePromise", firstPagePromise)
+        console.log(
+          "🚀 ~ file: app.js:1201 ~ load ~ firstPagePromise.then ~ firstPagePromise",
+          firstPagePromise
+        );
         this.eventBus.dispatch("documentloaded", { source: this });
       });
     });
@@ -2222,9 +2204,9 @@ if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
       // Removing of the following line will not guarantee that the viewer will
       // start accepting URLs from foreign origin -- CORS headers on the remote
       // server must be properly configured.
-    //   if (fileOrigin !== viewerOrigin) {
-    //     throw new Error("file origin does not match viewer's");
-    //   }
+      //   if (fileOrigin !== viewerOrigin) {
+      //     throw new Error("file origin does not match viewer's");
+      //   }
     } catch (ex) {
       PDFViewerApplication.l10n.get("pdfjs-loading-error").then(msg => {
         PDFViewerApplication._documentError(msg, { message: ex?.message });
@@ -2369,7 +2351,10 @@ function webViewerSidebarViewChanged({ view }) {
 function webViewerUpdateViewarea({ location }) {
   if (PDFViewerApplication.isInitialViewSet) {
     // Only update the storage when the document has been loaded *and* rendered.
-	console.log("🚀 ~ webViewerUpdateViewarea ~ location.pageNumber,:", location.pageNumber,)
+    console.log(
+      "🚀 ~ webViewerUpdateViewarea ~ location.pageNumber,:",
+      location.pageNumber
+    );
     PDFViewerApplication.store
       ?.setMultiple({
         page: location.pageNumber,
@@ -2592,9 +2577,8 @@ function webViewerUpdateFindControlState({
 }
 
 function webViewerScaleChanging(evt) {
-//   PDFViewerApplication.toolbar?.setPageScale(evt.presetValue, evt.scale);
-
-//   PDFViewerApplication.pdfViewer.update();
+  //   PDFViewerApplication.toolbar?.setPageScale(evt.presetValue, evt.scale);
+  //   PDFViewerApplication.pdfViewer.update();
 }
 
 function webViewerRotationChanging(evt) {
@@ -3271,10 +3255,27 @@ const PDFPrintServiceFactory = {
   },
 };
 
+/**
+ * Displays an alert with the specified message.
+ * @param {string} message
+ */
+function displayAlert(message, type = "warning") {
+  $("#actionTable").fadeOut("fast");
+  $("#msgWarning").text(message);
+  $("#AlertModal").fadeIn("fast").css("display", "flex");
+  if (type === "warning") {
+    $("#iconAlert").html(feather.icons["alert-triangle"].toSvg());
+    $("#iconAlert").css("color", "#efce4a");
+  }
 
+  if (type === "finish") {
+    $("#iconAlert").html(
+      `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" /><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" /></svg>`
+    );
+  }
+}
 
 /* ------------- FIRMA ------------- */
-
 
 export {
   DefaultExternalServices,

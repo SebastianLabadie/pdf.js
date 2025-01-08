@@ -1907,27 +1907,16 @@ i {
 	margin-bottom: 0;
 }
 
-#AlertModalContent svg {
+#iconAlert svg {
 	width: 65px;
 	height: 65px;
-	color: #efce4a;
 	padding: 0;
 	margin: 0;
 	border: none;
 	outline: none;
-	margin-bottom: 25px;
+	margin-top: 25px;
 }
 
-#AlertModalLicense svg {
-	width: 65px;
-	height: 65px;
-	color: #efce4a;
-	padding: 0;
-	margin: 0;
-	border: none;
-	outline: none;
-	margin-bottom: 25px;
-}
 
 #PadModalContent svg {
 	width: 65px;
@@ -2322,6 +2311,25 @@ i {
 	height: 150px;
 	width: 150px;
 }
+
+
+table td
+{
+    border-collapse: collapse;
+}  
+#templateContainer
+{
+    border: 1px solid #DDDDDD; /*@editable*/
+    background-color: #fff; 
+}
+.bodyContent div
+{
+    color: black; /*@editable*/
+font-size: 20px; /*@editable*/
+    font-family: Arial; /*@editable*/
+    line-height: 150%; /*@editable*/
+}    
+
 /* ------ TOOLTIPS ------ */
 
 /* START TOOLTIP STYLES */

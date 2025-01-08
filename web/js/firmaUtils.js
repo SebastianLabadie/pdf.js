@@ -1,7 +1,8 @@
 // const ENV_BASE_URL ="https://15ae-190-64-71-173.ngrok-free.app/ICIDOCJavaOracle/";
 // const ENV_BASE_URL ="http://1.1.9.126:8080/ICIDOC/";
-const ENV_BASE_URL = "https://apollo.tigo.co.cr:8082/ICIDOC/";
+// const ENV_BASE_URL = "https://apollo.tigo.co.cr:8082/ICIDOC/";
 // const ENV_BASE_URL = "http://10.7.148.128:8080/ICIDOC/";
+const ENV_BASE_URL = "../../../ICIDOC/";
 const ENV_documentGetURL = "servlet/apsign0002?";
 const ENV_documentSaveUrl = "ApiGestion/setDocument";
 const ENV_documentSendToPAD = "servlet/apsign0003?";

@@ -105,11 +105,14 @@ function subscribeToOrientationChanges() {
     );
     const angle = event.target.angle; // Get the rotation angle
     if (angle === 90 || angle === -90) {
-      console.log("subscribeToOrientationChanges ~ Landscape mode detected (angle: " + angle + "). Skipping validation.");
+      console.log(
+        "subscribeToOrientationChanges ~ Landscape mode detected (angle: " +
+          angle +
+          "). Skipping validation."
+      );
       hideOrientationDiv();
       return;
     }
-
 
     const isOlder = isOlderDevice(event);
     console.log(
@@ -144,9 +147,13 @@ function subscribeToOrientationChanges() {
     } else {
       const isOlder = isOlderDevice();
       console.log(
-        isOlder ? "subscribeToOrientationChanges ~ Older device detected!" : "subscribeToOrientationChanges ~ Modern device detected!"
+        isOlder
+          ? "subscribeToOrientationChanges ~ Older device detected!"
+          : "subscribeToOrientationChanges ~ Modern device detected!"
       );
-      showOrientationDiv();
+      if (isOlder) {
+        showOrientationDiv();
+      }
     }
   } else {
     // Fallback for unsupported environments
@@ -154,11 +161,16 @@ function subscribeToOrientationChanges() {
     if (!isLandscape) {
       const isOlder = isOlderDevice();
       console.log(
-        isOlder ? "subscribeToOrientationChanges ~ Older device detected!" : "subscribeToOrientationChanges ~ Modern device detected!"
+        isOlder
+          ? "subscribeToOrientationChanges ~ Older device detected!"
+          : "subscribeToOrientationChanges ~ Modern device detected!"
       );
-      showOrientationDiv();
+      if (isOlder) {
+        showOrientationDiv();
+      } else {
+        hideOrientationDiv();
+      }
     }
-    hideOrientationDiv();
   }
 }
 
@@ -173,7 +185,7 @@ function isOlderDevice() {
   console.log("🚀 ~ isOlderDevice ~ height:", height);
 
   // Check if viewport is smaller than 360x640
-  const isSmallViewport = width < 360 || height < 640;
+  const isSmallViewport = width < 360; // || height < 640;
   console.log("🚀 ~ isOlderDevice ~ isSmallViewport:", isSmallViewport);
 
   // User-Agent detection for older devices
@@ -193,13 +205,12 @@ function isOlderDevice() {
   return isSmallViewport || isOlderUserAgent;
 }
 
-
 function showOrientationDiv() {
-	$("body").append(
-		'<div id="orientationDiv"><img class="orientationIMG" src="images/rotate-phone.png" ><p>Coloque el dispositivo en posicion horizontal.</p></div>'
-	);
-	$("body").css("overflow", "hidden");
-	window.scrollTo(0, -50);
+  $("body").append(
+    '<div id="orientationDiv"><img class="orientationIMG" src="images/rotate-phone.png" ><p>Coloque el dispositivo en posicion horizontal.</p></div>'
+  );
+  $("body").css("overflow", "hidden");
+  window.scrollTo(0, -50);
 }
 
 function hideOrientationDiv() {
@@ -306,6 +317,13 @@ function setupSignaturePadEvents(signaturePad) {
  * @param {SignaturePad} signaturePad
  */
 function handleSaveSignature(signaturePad) {
+  console.log("🚀 ~ handleSaveSignature ~ signaturePad:", signaturePad);
+
+  if (signaturePad.isEmpty()) {
+    displayAlert("Por favor dibuje su firma antes de continuar", "warning");
+    return;
+  }
+
   const padData = signaturePad.toData();
   const padImage = signaturePad.toDataURL("image/png");
   const padSVG = signaturePad.toSVG();
@@ -860,12 +878,12 @@ function getHeightPaginasAnteriores(currentPage) {
  */
 async function guardarPDF() {
   if (window.signaturecount < 1) {
-    displayAlert("DEBE INGRESAR UNA FIRMA");
+    displayAlert("DEBE INGRESAR UNA FIRMA", "warning");
     return;
   }
 
   if (!areRequiredImagesUploaded()) {
-    displayAlert("Debe cargar las imágenes obligatorias");
+    displayAlert("Debe cargar las imágenes obligatorias", "warning");
     return;
   }
 
@@ -881,8 +899,8 @@ async function guardarPDF() {
   // Save signatures to the database
   $("#actionTable").fadeOut("fast");
   await guardarDocumento(SDTFirmaGuardar);
-  $("#FinishModal").fadeIn("fast").css("display", "flex");
-
+  // $("#FinishModal").fadeIn("fast").css("display", "flex");
+  displayAlert("DOCUMENTO FIRMADO", "finish");
   // Send message to React Native app if applicable
   sendMessageToApp({ accion: "FINALIZAR" });
 }
@@ -891,14 +909,25 @@ async function guardarPDF() {
  * Displays an alert with the specified message.
  * @param {string} message
  */
-function displayAlert(message) {
+function displayAlert(message, type = "warning") {
   $("#actionTable").fadeOut("fast");
   $("#msgWarning").text(message);
   $("#AlertModal").fadeIn("fast").css("display", "flex");
-  setTimeout(() => {
-    $("#AlertModal").fadeOut("fast");
-    $("#actionTable").fadeIn("fast");
-  }, 3000);
+  if (type === "warning") {
+    $("#iconAlert").html(feather.icons["alert-triangle"].toSvg());
+    $("#iconAlert").css("color", "#efce4a");
+
+    setTimeout(() => {
+      $("#AlertModal").fadeOut("fast");
+      $("#actionTable").fadeIn("fast");
+    }, 3000);
+  }
+
+  if (type === "finish") {
+    $("#iconAlert").html(
+      `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" /><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" /></svg>`
+    );
+  }
 }
 
 /**
@@ -1127,8 +1156,9 @@ function handleImageAction(action, interventor, imagen) {
       if (imagen.GestionImagen) {
         viewImage(imagen);
       } else {
-        alert(
-          'No hay imagen disponible para ver. Por favor, use la opción "Agregar".'
+        displayAlert(
+          "No hay imagen disponible para ver. Por favor, use la opción 'Agregar'.",
+          "warning"
         );
       }
       break;
@@ -1136,8 +1166,9 @@ function handleImageAction(action, interventor, imagen) {
       if (imagen.GestionImagen) {
         confirmDeleteImage(imagen);
       } else {
-        alert(
-          'No hay imagen disponible para eliminar. Por favor, use la opción "Agregar".'
+        displayAlert(
+          "No hay imagen disponible para eliminar. Por favor, use la opción 'Agregar'.",
+          "warning"
         );
       }
       break;
@@ -1217,8 +1248,9 @@ async function captureImageFromCamera(interventor, imagen) {
     });
   } catch (err) {
     console.error("Error accediendo a la cámara:", err);
-    alert(
-      "No se pudo acceder a la cámara. Por favor, use la opción de galería."
+    displayAlert(
+      "No se pudo acceder a la cámara. Por favor, use la opción de galería.",
+      "warning"
     );
   }
 }
@@ -1323,7 +1355,10 @@ async function storeImage(interventor, imagen, base64Image) {
     console.log(`Imagen guardada: ${res}`);
   } catch (error) {
     console.log(`Error guardando la imagen: ${error}`);
-    alert("No se pudo guardar la imagen. Por favor, intente nuevamente.");
+    displayAlert(
+      "No se pudo guardar la imagen. Por favor, intente nuevamente.",
+      "warning"
+    );
   }
 
   showModalImagenes();
@@ -1372,7 +1407,10 @@ function confirmDeleteImage(imagen) {
         showModalImagenes();
       } catch (error) {
         console.log(`Error eliminando la imagen: ${error}`);
-        alert("No se pudo eliminar la imagen. Por favor, intente nuevamente.");
+        displayAlert(
+          "No se pudo eliminar la imagen. Por favor, intente nuevamente.",
+          "warning"
+        );
       }
     });
   const $cancelButton = $("<button>")
